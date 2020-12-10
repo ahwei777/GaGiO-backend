@@ -8,7 +8,35 @@
 
 1. 補上 config.json
 2. 安裝套件 `npm install`
-3. 啟動 server 可以直接用 `npm run start`
+3. 新增 `config/config.json/，格式為
+
+```
+{
+  "development": {
+    "username": "",
+    "password": "",
+    "database": "",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "",
+    "password": "",
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "",
+    "password": "",
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
+```
+
+4. 啟動 server 可以直接用 `npm run start`
 
 ### 注意事項：
 
