@@ -36,7 +36,9 @@
 }
 ```
 
-4. 啟動 server 可以直接用 `npm run start`
+4. 在 terminal 輸入 `npx sequelize-cli db:migrate`，在本機端建立資料庫基本 table
+5. 在 terminal 輸入 `npx sequelize-cli db:seed:all`，建立範例使用者以及使用者權限
+6. 啟動 server 可以直接用 `npm run start`
 
 ### 注意事項：
 
