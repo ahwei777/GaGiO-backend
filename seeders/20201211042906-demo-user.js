@@ -6,10 +6,11 @@ module.exports = {
       "Users",
       [
         {
-          email: "teach@gmail.com",
-          password: "12345",
-          auth_id: 3,
+          email: "test@gmail.com",
+          password:
+            "$2b$10$wLehO8BxvecD6pustyiJTuo73i8hYTAtT3ZLglfZdQXUf..VjD.M.",
           nickname: "test",
+          AuthTypeId: 3,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

@@ -3,7 +3,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert(
-      "Auth_Types",
+      "Auth_types",
       [
         {
           name: "一般會員",
