@@ -20,11 +20,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING,
       },
-      auth_id: {
-        allowNull: false,
-        defaultValue: 0,
-        type: Sequelize.STRING,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
