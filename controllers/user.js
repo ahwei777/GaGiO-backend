@@ -1,6 +1,7 @@
 const db = require("../models");
 const bcrypt = require("bcrypt");
 const { User } = db;
+const { setToken, checkAuth } = require("../middleware/auth");
 
 const emailRegExp = /^([\w\.\-]){1,64}\@([\w\.\-]){1,64}$/;
 const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
@@ -13,8 +14,8 @@ const isGoodPassword = (password) => {
 
 const userController = {
   register: (req, res) => {
-    const { email, password, passwordComfirm, nickname } = req.body;
-    if (!email || !password || !passwordComfirm || !nickname)
+    const { email, password, confirm, nickname } = req.body;
+    if (!email || !password || !confirm || !nickname)
       return res
         .status(400)
         .json({ ok: 0, errorMessage: "Please enter all necessary fields" });
@@ -28,10 +29,10 @@ const userController = {
         ok: 0,
         errorMessage: "Please follow the rule for password",
       });
-    if (password !== passwordComfirm)
+    if (password !== confirm)
       return res.status(400).json({
         ok: 0,
-        errorMessage: "Password isn't equal to comfirm password",
+        errorMessage: "Password isn't equal to confirm password",
       });
     User.findOne({ where: { email } }).then((user) => {
       if (user)
@@ -44,7 +45,8 @@ const userController = {
         password: bcrypt.hashSync(password, 10),
         nickname,
       })
-        .then((newUser) =>
+        .then((newUser) => {
+          const token = setToken(newUser.id);
           res.status(201).json({
             ok: 1,
             data: {
@@ -52,10 +54,11 @@ const userController = {
                 email: newUser.email,
                 nickname: newUser.nickname,
                 auth_type: newUser.AuthTypeId,
+                token,
               },
             },
-          })
-        )
+          });
+        })
         .catch((error) =>
           res.status(400).json({
             ok: 0,
@@ -89,6 +92,7 @@ const userController = {
               errorMessage: "wrong password",
             });
           req.session.userId = user.id;
+          const token = setToken(user.id);
           return res.status(200).json({
             ok: 1,
             data: {
@@ -96,6 +100,7 @@ const userController = {
                 email: user.email,
                 nickname: user.nickname,
                 auth_type: user.AuthTypeId,
+                token,
               },
             },
           });
@@ -152,29 +157,9 @@ const userController = {
       });
   },
   getAllUser: (req, res) => {
-    const userId = req.session.userId;
-    if (!userId)
-      return res.status(400).json({
-        ok: 0,
-        errorMessage: "Didn't login",
-      });
-    User.findByPk(userId)
-      .then((user) => {
-        if (user.AuthTypeId !== 3)
-          return res.status(401).json({
-            ok: 0,
-            errorMessage: "Unauthorized",
-          });
-        return User.findAll()
-          .then((users) => {
-            return res.status(200).json(users);
-          })
-          .catch((error) => {
-            return res.status(400).json({
-              ok: 0,
-              errorMessage: error.toString(),
-            });
-          });
+    User.findAll()
+      .then((users) => {
+        return res.status(200).json(users);
       })
       .catch((error) => {
         return res.status(400).json({
