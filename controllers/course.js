@@ -80,6 +80,7 @@ const courseController = {
       TeacherId: 1,
       title,
       description,
+      price,
       imgUrl: 'https://i.imgur.com/q4rE8Sd.jpg',
       isPublic: false,
     })
@@ -125,6 +126,10 @@ const courseController = {
   },
   updateCourse: (req, res) => {
     const { title, description, price, isPublic } = req.body;
+    console.log('title',title)
+    console.log('description',description)
+    console.log('price', price)
+    console.log(isPublic === "")
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,
