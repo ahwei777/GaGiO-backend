@@ -15,7 +15,7 @@
   "development": {
     "username": "",
     "password": "",
-    "database": "",
+    "database": "teach_table",
     "host": "127.0.0.1",
     "dialect": "mysql"
   },
@@ -36,9 +36,9 @@
 }
 ```
 
-4. 在 terminal 輸入 `npx sequelize-cli db:migrate`，在本機端建立資料庫基本 table
-5. 在 terminal 輸入 `npx sequelize-cli db:seed:all`，建立範例使用者以及使用者權限
-6. 啟動 server 可以直接用 `npm run start`
+4. 在本機端建立名稱為 teach_table 的母資料庫
+5. 在 terminal 輸入 `npm run init`，在本機端建立資料庫基本 table 以及範例資料
+6. 在 terminal 輸入 `npm run start` 啟動 server 
 
 ### 注意事項：
 

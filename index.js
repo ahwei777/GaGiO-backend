@@ -20,9 +20,9 @@ app.use(
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.set('json spaces', 4)
 app.listen(port, () => {
-  db.sequelize.sync();
+  //db.sequelize.sync();
   console.log(`「 學習平台啟動！」 Listening on http://localhost:${port}`);
 });
 
