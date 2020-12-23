@@ -126,7 +126,8 @@ const userController = {
     });
   },
   getMe: (req, res) => {
-    const userId = req.session.userId;
+    const userId = req.header("Authorization");
+    console.log("userId", userId);
     if (!userId)
       return res.status(400).json({
         ok: 0,
@@ -145,6 +146,7 @@ const userController = {
             user: {
               email: user.email,
               nickname: user.nickname,
+              auth_type: user.AuthTypeId,
             },
           },
         });
