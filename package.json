@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
     "init": "npm run migrate && npm run seed",
+    "reset": "npx sequelize-cli db:migrate:undo:all && npm run migrate && npm run seed",
     "seed": "npx sequelize-cli db:seed:all",
     "migrate": "npx sequelize-cli db:migrate",
     "build": "npm run migrate && node index.js"
