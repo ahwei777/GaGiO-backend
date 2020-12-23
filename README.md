@@ -36,8 +36,8 @@
 }
 ```
 
-4. 在本機端建立名稱為 teach_table 的母資料庫
-5. 在 terminal 輸入 `npm run init`，在本機端建立資料庫基本 table 以及範例資料
+4. 在本機端建立名稱為 `teach_table` 的母資料庫
+5. (開發期)在 terminal 輸入 `npm run reset`，在本機端刪除所有舊 tables 後重建並插入範例資料
 6. 在 terminal 輸入 `npm run start` 啟動 server 
 
 ### 注意事項：
