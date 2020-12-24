@@ -13,20 +13,20 @@ router.post('/login', userController.login);
 router.post('/logout', userController.logout);
 router.get('/user', checkAuth(3), userController.getAllUser);
 router.get('/user/:id', checkAuth(3), userController.getUser);
-router.patch('/user/:id', userController.updateUserAuth);
+router.patch('/user/:id', checkAuth(3), userController.updateUserAuth);
 router.get('/me', userController.getMe);
 
 // course
 router.get('/courses', courseController.getCourseList);
 router.get('/courses/:id', courseController.getCourse);
-router.post('/courses', courseController.addCourse);
-router.delete('/courses/:id', courseController.deleteCourse);
-router.patch('/courses/:id', courseController.updateCourse);
+router.post('/courses', checkAuth(3), courseController.addCourse);
+router.delete('/courses/:id', checkAuth(3), courseController.deleteCourse);
+router.patch('/courses/:id', checkAuth(3), courseController.updateCourse);
 
 // cart
-router.get('/cartList', cartController.getCartList);
-router.post('/cart-item/:id', cartController.addCartItem);
-router.delete('/cart-item/:id', cartController.deleteCartItem);
+router.get('/cartList', checkAuth(1), cartController.getCartList);
+router.post('/cart-item/:id', checkAuth(1), cartController.addCartItem);
+router.delete('/cart-item/:id', checkAuth(1), cartController.deleteCartItem);
 
 // teacher
 router.get('/teachers', teacherController.getTeacherList);

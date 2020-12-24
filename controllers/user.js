@@ -44,6 +44,8 @@ const userController = {
         email,
         password: bcrypt.hashSync(password, 10),
         nickname,
+        // 預設註冊一般會員
+        AuthTypeId: 1,
       })
         .then((newUser) => {
           const token = setToken(newUser.id);
