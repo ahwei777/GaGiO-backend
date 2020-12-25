@@ -7,7 +7,7 @@ const setToken = (userId) => {
 
 const checkToken = (req) => {
   if (!req.header("Authorization")) return;
-  const token = req.header("Authorization");
+  const token = Number(req.header("Authorization"));
   return token;
 };
 
@@ -27,7 +27,7 @@ const checkAuth = (identity) => {
         });
       switch (identity) {
         case 1:
-          if (user.auth.id !== 1)
+          if (user.AuthTypeId !== 1)
             return res.status(401).json({
               ok: 0,
               errorMessage: "permission denied",
@@ -35,7 +35,7 @@ const checkAuth = (identity) => {
           next();
           break;
         case 2:
-          if (user.auth.id !== 2)
+          if (user.AuthTypeId !== 2)
             return res.status(401).json({
               ok: 0,
               errorMessage: "permission denied",
@@ -43,7 +43,7 @@ const checkAuth = (identity) => {
           next();
           break;
         case 3:
-          if (user.auth.id !== 3)
+          if (user.AuthTypeId !== 3)
             return res.status(401).json({
               ok: 0,
               errorMessage: "permission denied",

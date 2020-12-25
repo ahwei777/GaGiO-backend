@@ -11,7 +11,8 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 router.get("/user", checkAuth(3), userController.getAllUser);
 router.get("/user/:id", checkAuth(3), userController.getUser);
-router.patch("/user/:id", userController.updateUserAuth);
+router.patch("/user/:id", userController.updateUserInfo);
+router.patch("/user/password/:id", userController.updateUserPassword);
 router.get("/me", userController.getMe);
 
 router.get("/courses", courseController.getCourseList);

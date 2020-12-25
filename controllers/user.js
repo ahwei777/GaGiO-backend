@@ -1,7 +1,7 @@
 const db = require("../models");
 const bcrypt = require("bcrypt");
 const { User } = db;
-const { setToken, checkAuth } = require("../middleware/auth");
+const { setToken, checkAuth, checkToken } = require("../middleware/auth");
 
 const emailRegExp = /^([\w\.\-]){1,64}\@([\w\.\-]){1,64}$/;
 const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
@@ -51,6 +51,7 @@ const userController = {
             ok: 1,
             data: {
               user: {
+                id: newUser.id,
                 email: newUser.email,
                 nickname: newUser.nickname,
                 auth_type: newUser.AuthTypeId,
@@ -97,6 +98,7 @@ const userController = {
             ok: 1,
             data: {
               user: {
+                id: user.id,
                 email: user.email,
                 nickname: user.nickname,
                 auth_type: user.AuthTypeId,
@@ -144,6 +146,7 @@ const userController = {
           ok: 1,
           data: {
             user: {
+              id: user.id,
               email: user.email,
               nickname: user.nickname,
               auth_type: user.AuthTypeId,
@@ -161,7 +164,19 @@ const userController = {
   getAllUser: (req, res) => {
     User.findAll()
       .then((users) => {
-        return res.status(200).json(users);
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            users: users.map((user) => {
+              return {
+                id: user.is,
+                email: user.email,
+                nickname: user.nickname,
+                auth_type: user.AuthTypeId,
+              };
+            }),
+          },
+        });
       })
       .catch((error) => {
         return res.status(400).json({
@@ -171,44 +186,25 @@ const userController = {
       });
   },
   getUser: (req, res) => {
-    const userSessionId = req.session.userId;
     const userId = req.params.id;
-    if (!userSessionId)
-      return res.status(400).json({
-        ok: 0,
-        errorMessage: "Didn't login",
-      });
-    User.findByPk(userSessionId)
-      .then((requestUser) => {
-        if (requestUser.AuthTypeId !== 3)
-          return res.status(401).json({
+    User.findByPk(userId)
+      .then((user) => {
+        if (!user)
+          return res.status(404).json({
             ok: 0,
-            errorMessage: "Unauthorized",
+            errorMessage: "Cannot find user",
           });
-        User.findByPk(userId)
-          .then((user) => {
-            if (!user)
-              return res.status(404).json({
-                ok: 0,
-                errorMessage: "Cannot find user",
-              });
-            return res.status(200).json({
-              ok: 1,
-              data: {
-                user: {
-                  email: user.email,
-                  nickname: user.nickname,
-                  auth_type: user.AuthTypeId,
-                },
-              },
-            });
-          })
-          .catch((error) => {
-            return res.status(400).json({
-              ok: 0,
-              errorMessage: error.toString(),
-            });
-          });
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            user: {
+              id: user.id,
+              email: user.email,
+              nickname: user.nickname,
+              auth_type: user.AuthTypeId,
+            },
+          },
+        });
       })
       .catch((error) => {
         return res.status(400).json({
@@ -217,46 +213,69 @@ const userController = {
         });
       });
   },
-  updateUserAuth: (req, res) => {
-    const userSessionId = req.session.userId;
+  updateUserInfo: (req, res) => {
     const userId = req.params.id;
-    const { AuthTypeId } = req.body;
-    if (!userSessionId)
-      return res.status(400).json({
-        ok: 0,
-        errorMessage: "Didn't login",
-      });
-    User.findByPk(userSessionId)
-      .then((requestUser) => {
-        if (requestUser.AuthTypeId !== 3)
-          return res.status(401).json({
-            ok: 0,
-            errorMessage: "Unauthorized",
-          });
+    const token = checkToken(req);
+    if (token !== userId)
+      return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+    const { nickname, email, AuthTypeId } = req.body;
+    User.findByPk(userId)
+      .then((user) => {
+        const newNickname = nickname || user.nickname;
+        const newEmail = email || user.email;
+        const newAuthTypeId = AuthTypeId || user.AuthTypeId;
         User.update(
           {
-            AuthTypeId,
+            email: newEmail,
+            nickname: newNickname,
+            AuthTypeId: newAuthTypeId,
           },
           { where: { id: userId } }
-        )
-          .then((updatedUser) => {
-            return res.status(200).json({
-              ok: 1,
-              data: {
-                user: {
-                  email: updatedUser.email,
-                  nickname: updatedUser.nickname,
-                  auth_type: updatedUser.AuthTypeId,
-                },
+        ).then((updatedUser) => {
+          return res.status(200).json({
+            ok: 1,
+            data: {
+              user: {
+                id: updatedUser.nickname,
+                email: updatedUser.email,
+                nickname: updatedUser.nickname,
+                auth_type: updatedUser.AuthTypeId,
               },
-            });
-          })
-          .catch((error) => {
-            return res.status(400).json({
-              ok: 0,
-              errorMessage: error.toString(),
-            });
+            },
           });
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
+  updateUserPassword: (req, res) => {
+    const userId = req.params.id;
+    const token = checkToken(req);
+    if (token !== userId)
+      return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+    const { password } = req.body;
+    User.update(
+      {
+        password,
+      },
+      { where: { id: userId } }
+    )
+      .then((updatedUser) => {
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            user: {
+              id: updatedUser.nickname,
+              email: updatedUser.email,
+              nickname: updatedUser.nickname,
+              auth_type: updatedUser.AuthTypeId,
+            },
+          },
+        });
       })
       .catch((error) => {
         return res.status(400).json({
