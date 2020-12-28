@@ -17,8 +17,10 @@ router.patch('/user/:id', checkAuth(3), userController.updateUserAuth);
 router.get('/me', userController.getMe);
 
 // course
-router.get('/courses', courseController.getCourseList);
-router.get('/courses/:id', courseController.getCourse);
+router.get('/publicCourses', courseController.getPublicCourseList);
+router.get('/publicCourses/:id', courseController.getPublicCourse);
+router.get('/courses', checkAuth(3), courseController.getAllCourseList);
+router.get('/courses/:id', checkAuth(3), courseController.getAllCourse);
 router.post('/courses', checkAuth(3), courseController.addCourse);
 router.delete('/courses/:id', checkAuth(3), courseController.deleteCourse);
 router.patch('/courses/:id', checkAuth(3), courseController.updateCourse);
