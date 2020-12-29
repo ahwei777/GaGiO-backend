@@ -7,8 +7,17 @@ const teacherController = {
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
     let order = _order || 'ASC';
+    let where = {
+      deletedAt: null,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
+        deletedAt: null,
+      };
+    }
     Teacher.findAll({
-      include: [Course],
+      include: [{ model: Course, where }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
@@ -34,6 +43,15 @@ const teacherController = {
       });
   },
   getTeacher: (req, res) => {
+    let where = {
+      deletedAt: null,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
+        deletedAt: null,
+      };
+    }
     Teacher.findOne({
       where: {
         id: req.params.id,
@@ -41,7 +59,7 @@ const teacherController = {
       include: [
         {
           model: Course,
-          where: { isPublic: true },
+          where,
         },
       ],
     })
@@ -126,10 +144,6 @@ const teacherController = {
   },
   updateCourse: (req, res) => {
     const { title, description, price, isPublic } = req.body;
-    console.log('title', title);
-    console.log('description', description);
-    console.log('price', price);
-    console.log(isPublic === '');
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,

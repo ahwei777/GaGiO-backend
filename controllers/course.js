@@ -1,17 +1,23 @@
 const db = require('../models');
-const { Course, Teacher } = db;
+const { Course, Teacher, User } = db;
 
 const courseController = {
-  getPublicCourseList: (req, res) => {
+  getCourseList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
     let order = _order || 'ASC';
-    Course.findAll({
-      where: {
-        isPublic: 1,
+    let where = {
+      deletedAt: null,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
         deletedAt: null,
-      },
+      };
+    }
+    Course.findAll({
+      where,
       include: [Teacher],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -37,75 +43,20 @@ const courseController = {
         });
       });
   },
-  getPublicCourse: (req, res) => {
-    Course.findOne({
-      where: {
+  getCourse: (req, res) => {
+    let where = {
+      deletedAt: null,
+      id: req.params.id,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
+        deletedAt: null,
         id: req.params.id,
-        isPublic: 1,
-        deletedAt: null,
-      },
-      include: [Teacher],
-    })
-      .then((course) => {
-        if (!course)
-          return res.status(404).json({
-            ok: 0,
-            errorMessage: 'Cannot find course or the course is non-public',
-          });
-        return res.status(200).json({
-          ok: 1,
-          data: {
-            course,
-          },
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
-  },
-  getAllCourseList: (req, res) => {
-    const { _page, _limit, _sort, _order } = req.query;
-    let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
-    Course.findAll({
-      where: {
-        deletedAt: null,
-      },
-      include: [Teacher],
-      offset: _page ? (_page - 1) * CoursesPerPage : 0,
-      limit: _page ? CoursesPerPage : null,
-      order: [[sort, order]],
-    })
-      .then((courseList) => {
-        if (courseList.length === 0)
-          return res.status(404).json({
-            ok: 0,
-            errorMessage: 'No available courses',
-          });
-        return res.status(200).json({
-          ok: 1,
-          data: {
-            courseList,
-          },
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
-  },
-  getAllCourse: (req, res) => {
+      };
+    }
     Course.findOne({
-      where: {
-        id: req.params.id,
-        deletedAt: null,
-      },
+      where,
       include: [Teacher],
     })
       .then((course) => {
@@ -188,10 +139,6 @@ const courseController = {
   },
   updateCourse: (req, res) => {
     const { title, description, price, isPublic } = req.body;
-    console.log('title',title)
-    console.log('description',description)
-    console.log('price', price)
-    console.log(isPublic === "")
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,
