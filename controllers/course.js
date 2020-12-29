@@ -1,12 +1,12 @@
-const db = require('../models');
+const db = require("../models");
 const { Course, Teacher, User } = db;
 
 const courseController = {
   getCourseList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     let where = {
       deletedAt: null,
       isPublic: 1,
@@ -27,7 +27,7 @@ const courseController = {
         if (courseList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: "No available courses",
           });
         return res.status(200).json({
           ok: 1,
@@ -63,7 +63,7 @@ const courseController = {
         if (!course)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'Cannot find course or the course is non-public',
+            errorMessage: "Cannot find course or the course is non-public",
           });
         return res.status(200).json({
           ok: 1,
@@ -84,7 +84,7 @@ const courseController = {
     if (!title || !description || !price) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全',
+        errorMessage: "資料不齊全",
       });
     }
     Course.create({
@@ -94,7 +94,7 @@ const courseController = {
       title,
       description,
       price,
-      imgUrl: 'https://i.imgur.com/q4rE8Sd.jpg',
+      imgUrl: "https://i.imgur.com/q4rE8Sd.jpg",
       isPublic: false,
     })
       .then((result) => {
@@ -138,11 +138,12 @@ const courseController = {
       });
   },
   updateCourse: (req, res) => {
+    const courseId = req.params.id;
     const { title, description, price, isPublic } = req.body;
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全',
+        errorMessage: "資料不齊全",
       });
     }
     Course.update(
@@ -154,9 +155,7 @@ const courseController = {
       },
       {
         where: {
-          // 為原開課者才可編輯
-          // TeacherId: 1,
-          id: req.params.id,
+          id: courseId,
         },
       }
     )
@@ -165,6 +164,7 @@ const courseController = {
         // success
         return res.status(200).json({
           ok: 1,
+          data: result,
         });
       })
       .catch((error) => {
