@@ -1,32 +1,28 @@
-const db = require("../models");
+const db = require('../models');
 const { Course, Teacher } = db;
 
-const courseController = {
-  getCourseList: (req, res) => {
+const teacherController = {
+  getTeacherList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || "id";
-    let order = _order || "ASC";
-    Course.findAll({
-      where: {
-        isPublic: 1,
-        deletedAt: null,
-      },
-      include: [Teacher],
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    Teacher.findAll({
+      include: [Course],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
     })
-      .then((courseList) => {
-        if (courseList.length === 0)
+      .then((teacherList) => {
+        if (teacherList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "No available courses",
+            errorMessage: 'No available teachers',
           });
         return res.status(200).json({
           ok: 1,
           data: {
-            courseList,
+            teacherList,
           },
         });
       })
@@ -37,25 +33,28 @@ const courseController = {
         });
       });
   },
-  getCourse: (req, res) => {
-    Course.findOne({
+  getTeacher: (req, res) => {
+    Teacher.findOne({
       where: {
         id: req.params.id,
-        isPublic: 1,
-        deletedAt: null,
       },
-      include: [Teacher],
+      include: [
+        {
+          model: Course,
+          where: { isPublic: true },
+        },
+      ],
     })
-      .then((course) => {
-        if (!course)
+      .then((teacher) => {
+        if (!teacher)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "Cannot find course or the course is non-public",
+            errorMessage: 'Cannot find teacher',
           });
         return res.status(200).json({
           ok: 1,
           data: {
-            course,
+            teacher,
           },
         });
       })
@@ -66,12 +65,13 @@ const courseController = {
         });
       });
   },
+
   addCourse: (req, res) => {
     const { title, description, price } = req.body;
     if (!title || !description || !price) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: "資料不齊全",
+        errorMessage: '資料不齊全',
       });
     }
     Course.create({
@@ -81,7 +81,7 @@ const courseController = {
       title,
       description,
       price,
-      imgUrl: "https://i.imgur.com/q4rE8Sd.jpg",
+      imgUrl: 'https://i.imgur.com/q4rE8Sd.jpg',
       isPublic: false,
     })
       .then((result) => {
@@ -125,16 +125,15 @@ const courseController = {
       });
   },
   updateCourse: (req, res) => {
-    const courseId = req.params.id;
     const { title, description, price, isPublic } = req.body;
-    console.log("title", title);
-    console.log("description", description);
-    console.log("price", price);
-    console.log(isPublic === "");
+    console.log('title', title);
+    console.log('description', description);
+    console.log('price', price);
+    console.log(isPublic === '');
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: "資料不齊全",
+        errorMessage: '資料不齊全',
       });
     }
     Course.update(
@@ -146,7 +145,9 @@ const courseController = {
       },
       {
         where: {
-          id: courseId,
+          // 為原開課者才可編輯
+          // TeacherId: 1,
+          id: req.params.id,
         },
       }
     )
@@ -155,7 +156,6 @@ const courseController = {
         // success
         return res.status(200).json({
           ok: 1,
-          data: result,
         });
       })
       .catch((error) => {
@@ -167,4 +167,4 @@ const courseController = {
   },
 };
 
-module.exports = courseController;
+module.exports = teacherController;

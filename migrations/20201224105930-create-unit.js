@@ -8,21 +8,16 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      name: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      discription: {
-        allowNull: false,
-        type: Sequelize.STRING,
-      },
-      videoLink: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-      },
       CourseId: {
         allowNull: false,
         type: Sequelize.INTEGER,
+      },
+      TeacherId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+      },
+      unit_list: {
+        type: Sequelize.JSON,
       },
       createdAt: {
         allowNull: false,

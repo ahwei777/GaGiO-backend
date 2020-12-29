@@ -44,6 +44,8 @@ const userController = {
         email,
         password: bcrypt.hashSync(password, 10),
         nickname,
+        // 預設註冊一般會員
+        AuthTypeId: 1,
       })
         .then((newUser) => {
           const token = setToken(newUser.id);
@@ -128,7 +130,7 @@ const userController = {
     });
   },
   getMe: (req, res) => {
-    const userId = req.header("Authorization");
+    const userId = checkToken(req);
     console.log("userId", userId);
     if (!userId)
       return res.status(400).json({
@@ -214,8 +216,8 @@ const userController = {
       });
   },
   updateUserInfo: (req, res) => {
-    const userId = req.params.id;
-    const token = checkToken(req);
+    const userId = Number(req.params.id);
+    const token = Number(checkToken(req));
     if (token !== userId)
       return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
     const { nickname, email, AuthTypeId } = req.body;
@@ -232,14 +234,15 @@ const userController = {
           },
           { where: { id: userId } }
         ).then((updatedUser) => {
+          console.log(updatedUser);
           return res.status(200).json({
             ok: 1,
             data: {
               user: {
-                id: updatedUser.nickname,
-                email: updatedUser.email,
-                nickname: updatedUser.nickname,
-                auth_type: updatedUser.AuthTypeId,
+                id: userId,
+                email: newEmail,
+                nickname: newNickname,
+                AuthTypeId: newAuthTypeId,
               },
             },
           });
@@ -269,10 +272,8 @@ const userController = {
           ok: 1,
           data: {
             user: {
-              id: updatedUser.nickname,
-              email: updatedUser.email,
-              nickname: updatedUser.nickname,
-              auth_type: updatedUser.AuthTypeId,
+              id: userId,
+              token: token,
             },
           },
         });

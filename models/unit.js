@@ -9,18 +9,18 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Unit.belongsTo(models.Course);
+      Unit.belongsTo(models.Teacher);
     }
   }
   Unit.init(
     {
-      name: DataTypes.STRING,
-      discription: DataTypes.STRING,
-      videoLink: DataTypes.STRING,
       CourseId: DataTypes.INTEGER,
+      TeacherId: DataTypes.INTEGER,
+      unit_list: DataTypes.JSON,
     },
     {
       sequelize,
-      modelName: "unit",
+      modelName: "Unit",
     }
   );
   return Unit;

@@ -10,7 +10,7 @@ const courseController = {
     Cart_item.findAll({
       where: {
         // 權限管理
-        UserId: 1,
+        UserId: req.userId,
         deletedAt: null,
       },
       include: [Course],
@@ -41,11 +41,12 @@ const courseController = {
   addCartItem: async (req, res) => {
     const searchItem = await Cart_item.findOne({
       where: {
-        UserId: 1,
+        UserId: req.userId,
         CourseId: req.params.id,
         deletedAt: null,
       }
     })
+    console.log('yo', searchItem)
     if (searchItem !== null) {
       return res.status(400).json({
         ok: 0,
@@ -55,7 +56,7 @@ const courseController = {
     console.log('searchItem', searchItem)
     Cart_item.create({
       // 權限管理
-      UserId: 1,
+      UserId: req.userId,
       CourseId: req.params.id,
     })
       .then((result) => {
@@ -78,7 +79,7 @@ const courseController = {
       {
         where: {
           // 權限管理
-          UserId: 1,
+          UserId: req.userId,
           CourseId: req.params.id,
         },
       }
