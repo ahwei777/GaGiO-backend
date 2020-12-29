@@ -1,5 +1,5 @@
 const express = require("express");
-const { checkAuth, checkTeacherAuth } = require("../middleware/auth");
+const { checkAuth, checkTeacherAuth, getAuth } = require("../middleware/auth");
 const router = express.Router();
 
 const userController = require("../controllers/user");
@@ -19,17 +19,17 @@ router.patch("/user/password/:id", userController.updateUserPassword);
 router.get("/me", userController.getMe);
 
 // course
-router.get("/courses", courseController.getCourseList);
-router.get("/courses/:id", courseController.getCourse);
+router.get("/courses", getAuth(), courseController.getCourseList);
+router.get("/courses/:id", getAuth(), courseController.getCourse);
 router.post("/courses", checkAuth(3), courseController.addCourse);
 router.delete(
   "/courses/:id",
-  checkTeacherAuth(),
+  checkTeacherAuth(course),
   courseController.deleteCourse
 );
 router.patch(
   "/courses/:id",
-  checkTeacherAuth("coursenp"),
+  checkTeacherAuth("course"),
   courseController.updateCourse
 );
 
@@ -39,8 +39,8 @@ router.post("/cart-item/:id", checkAuth(1), cartController.addCartItem);
 router.delete("/cart-item/:id", checkAuth(1), cartController.deleteCartItem);
 
 // teacher
-router.get("/teachers", teacherController.getTeacherList);
-router.get("/teachers/:id", teacherController.getTeacher);
+router.get("/teachers", getAuth(), teacherController.getTeacherList);
+router.get("/teachers/:id", getAuth(), teacherController.getTeacher);
 //router.post("/teachers", teacherController.addTeacher);
 //router.delete("/teachers/:id", teacherController.deleteTeacher);
 //router.patch("/teachers/:id", teacherController.updateTeacher);

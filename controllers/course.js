@@ -1,5 +1,5 @@
 const db = require("../models");
-const { Course, Teacher } = db;
+const { Course, Teacher, User } = db;
 
 const courseController = {
   getCourseList: (req, res) => {
@@ -7,11 +7,17 @@ const courseController = {
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || "id";
     let order = _order || "ASC";
-    Course.findAll({
-      where: {
-        isPublic: 1,
+    let where = {
+      deletedAt: null,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
         deletedAt: null,
-      },
+      };
+    }
+    Course.findAll({
+      where,
       include: [Teacher],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -38,12 +44,19 @@ const courseController = {
       });
   },
   getCourse: (req, res) => {
-    Course.findOne({
-      where: {
-        id: req.params.id,
-        isPublic: 1,
+    let where = {
+      deletedAt: null,
+      id: req.params.id,
+      isPublic: 1,
+    };
+    if (req.AuthTypeId === 3) {
+      where = {
         deletedAt: null,
-      },
+        id: req.params.id,
+      };
+    }
+    Course.findOne({
+      where,
       include: [Teacher],
     })
       .then((course) => {
@@ -127,10 +140,6 @@ const courseController = {
   updateCourse: (req, res) => {
     const courseId = req.params.id;
     const { title, description, price, isPublic } = req.body;
-    console.log("title", title);
-    console.log("description", description);
-    console.log("price", price);
-    console.log(isPublic === "");
     if (!title || !description || !price || !isPublic) {
       return res.status(400).json({
         ok: 0,
