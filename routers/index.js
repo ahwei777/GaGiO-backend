@@ -24,7 +24,7 @@ router.get("/courses/:id", getAuth(), courseController.getCourse);
 router.post("/courses", checkAuth(3), courseController.addCourse);
 router.delete(
   "/courses/:id",
-  checkTeacherAuth(course),
+  checkTeacherAuth("course"),
   courseController.deleteCourse
 );
 router.patch(
