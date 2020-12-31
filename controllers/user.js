@@ -171,10 +171,11 @@ const userController = {
           data: {
             users: users.map((user) => {
               return {
-                id: user.is,
+                id: user.id,
                 email: user.email,
                 nickname: user.nickname,
                 auth_type: user.AuthTypeId,
+                updated_at: user.updatedAt,
               };
             }),
           },
@@ -203,7 +204,7 @@ const userController = {
               id: user.id,
               email: user.email,
               nickname: user.nickname,
-              auth_type: user.AuthTypeId,
+              updated_at: user.updatedAt,
             },
           },
         });
