@@ -3,13 +3,13 @@ const { Unit, Course, Teacher } = db;
 
 const unitController = {
   getUnitByCourseId: (req, res) => {
-    const { courseId, _order } = req.query;
+    const { courseId } = req.query;
+    console.log(courseId);
     if (!courseId)
       return res.status(400).json({
         ok: 0,
         errorMessage: "No course id",
       });
-    let order = _order || "ASC";
     Course.findByPk(courseId)
       .then((course) => {
         if (!course)
@@ -17,16 +17,25 @@ const unitController = {
             ok: 0,
             errorMessage: "Cannot find course !",
           });
-        Unit.findAll({
+        Unit.findOne({
           where: { CourseId: courseId },
-          order: [["order", order]],
+          attributes: ["id", "unit_list"],
         })
-          .then((units) =>
+          .then((units) => {
+            if (!units)
+              return res.status(404).json({
+                ok: 0,
+                errorMessage: "Cannot find unit_list !",
+              });
             res.status(200).json({
               ok: 1,
-              data: { course: course.name, units },
-            })
-          )
+              data: {
+                title: course.title,
+                imgUrl: course.imgUrl,
+                unit_list: units.unit_list.unit_list,
+              },
+            });
+          })
           .catch((error) =>
             res.status(400).json({
               ok: 0,
@@ -90,6 +99,7 @@ const unitController = {
   },
   updateUnit: (req, res) => {
     const unitListId = req.params.id;
+    const unitListToJSON = JSON.stringify(req.body.unitList);
     if (!unitListId)
       return res.status(400).json({
         ok: 0,
@@ -105,7 +115,7 @@ const unitController = {
           });
         Unit.update(
           {
-            unitList,
+            unitListToJSON,
           },
           { where: { id: unitListId } }
         )

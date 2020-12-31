@@ -10,14 +10,19 @@ module.exports = {
           TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
-              { id: 1, unitTitle: "Writing a React component" },
-              { id: 2, unitTitle: "React life-cycle" },
-              { id: 3, unitTitle: "The React state" },
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
               {
                 id: 4,
-                unitTitle: "Understanding component props and re-rendering",
+                title: "Understanding component props and re-rendering",
               },
-              { id: 5, unitTitle: "Importing CSS into React components" },
+              { id: 5, title: "Importing CSS into React components" },
             ],
           }),
           createdAt: new Date(),
