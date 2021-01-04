@@ -1,5 +1,6 @@
 const db = require("../models");
 const { Unit, Course, Teacher } = db;
+const { checkToken } = require("../middleware/auth");
 
 const unitController = {
   getUnitByCourseId: (req, res) => {
@@ -79,7 +80,7 @@ const unitController = {
       );
   },
   addUnit: (req, res) => {
-    const { teacherId } = res.locals;
+    const userId = checkToken(req);
     const { courseId, unit_list } = req.body;
     if (!courseId)
       return res.status(400).json({
@@ -88,7 +89,7 @@ const unitController = {
       });
     Unit.create({
       CourseId: courseId,
-      TeacherId: teacherId,
+      TeacherId: userId,
       unit_list,
     }).then((unit) => {
       return res.status(200).json({
@@ -99,13 +100,12 @@ const unitController = {
   },
   updateUnit: (req, res) => {
     const unitListId = req.params.id;
-    const unitListToJSON = JSON.stringify(req.body.unitList);
+    const unit_list = req.body;
     if (!unitListId)
       return res.status(400).json({
         ok: 0,
         errorMessage: "No unit list id",
       });
-    const { unitList } = req.body;
     Unit.findByPk(unitListId)
       .then((result) => {
         if (!result)
@@ -115,7 +115,7 @@ const unitController = {
           });
         Unit.update(
           {
-            unitListToJSON,
+            unit_list,
           },
           { where: { id: unitListId } }
         )
@@ -123,7 +123,7 @@ const unitController = {
             return res.status(200).json({
               ok: 1,
               data: {
-                unitList,
+                unit_list,
               },
             });
           })

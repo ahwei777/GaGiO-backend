@@ -1,5 +1,5 @@
 const db = require("../models");
-const { Course, Teacher, User } = db;
+const { Course, Teacher, User, Unit } = db;
 
 const courseController = {
   getCourseList: (req, res) => {

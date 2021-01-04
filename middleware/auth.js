@@ -73,24 +73,19 @@ const checkTeacher = (courseId, userId) => {
     where: { id: courseId, deletedAt: null },
     attributes: ["id", "TeacherId"],
     include: [{ model: Teacher, attributes: ["UserId"] }],
-  }).then((course) => {
-    if (!course)
-      return res.status(404).json({
-        ok: 0,
-        errorMessage: "Cannot find course",
-      });
-    if (course.Teacher.UserId !== userId)
-      return res.status(401).json({
-        ok: 0,
-        errorMessage: "UnAuthorized",
-      });
-    res.locals.teacherId = course.TeacherId;
-  });
+  })
+    .then((course) => {
+      if (!course) return 404;
+      if (course.Teacher.UserId !== userId) return 401;
+      return 200;
+    })
+    .catch((error) => console.log(error));
 };
 const checkTeacherAuth = (controller) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const userId = Number(checkToken(req));
     let courseId;
+    let authStatus;
     switch (controller) {
       case "course":
         courseId = req.params.id || req.body.courseId;
@@ -99,19 +94,47 @@ const checkTeacherAuth = (controller) => {
             ok: 0,
             errorMessage: "course id is required",
           });
-        checkTeacher(courseId, userId);
-        next();
+        authStatus = await checkTeacher(courseId, userId);
+        switch (authStatus) {
+          case 404:
+            return res.status(404).json({
+              ok: 0,
+              errorMessage: "Cannot find course",
+            });
+          case 401:
+            return res.status(401).json({
+              ok: 0,
+              errorMessage: "Unauthorized",
+            });
+          case 200:
+            next();
+            break;
+        }
         break;
       case "unit":
         const unitListId = req.params.id;
         Unit.findOne({
           where: { id: unitListId },
           attributes: ["CourseId"],
-        }).then((result) => {
+        }).then(async (result) => {
           courseId = result.CourseId;
+          authStatus = await checkTeacher(courseId, userId);
+          switch (authStatus) {
+            case 404:
+              return res.status(404).json({
+                ok: 0,
+                errorMessage: "Cannot find course",
+              });
+            case 401:
+              return res.status(401).json({
+                ok: 0,
+                errorMessage: "Unauthorized",
+              });
+            case 200:
+              next();
+              break;
+          }
         });
-        checkTeacher(courseId, userId);
-        next();
         break;
     }
   };
