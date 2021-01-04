@@ -14,6 +14,15 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        {
+          email: "user@gmail.com",
+          password:
+            "$2b$10$wLehO8BxvecD6pustyiJTuo73i8hYTAtT3ZLglfZdQXUf..VjD.M.", //Aa123456
+          nickname: "test",
+          AuthTypeId: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       {}
     );
