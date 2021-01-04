@@ -53,7 +53,7 @@ const checkAuth = (identity) => {
         });
       // req 內設置 id 便於後續取得使用者身分進行操作
       req.userId = user.id;
-      req.AuthTypeId = user.AuthTypeId;
+      req.authTypeId = user.AuthTypeId;
       switch (identity) {
         case 'admin':
           if (user.AuthTypeId !== 3)
