@@ -157,7 +157,6 @@ const courseController = {
   updateCourse: (req, res) => {
     const courseId = req.params.id;
     const { title, description, price, isPublic } = req.body;
-    console.log('title', title)
     if (!title || !description || !price || isPublic === undefined) {
       return res.status(400).json({
         ok: 0,
@@ -179,8 +178,13 @@ const courseController = {
         },
       }
     )
-      .then((result) => {
-        console.log('result', result);
+      .then((affectedRows) => {
+        if (!affectedRows[0]) {
+          return res.status(404).json({
+            ok: 0,
+            message: 'No available course',
+          });
+        }
         // success
         return res.status(200).json({
           ok: 1,

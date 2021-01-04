@@ -47,7 +47,7 @@ const checkAuth = (identity) => {
     }).then((user) => {
       console.log('user', user);
       if (!user)
-        return res.status(400).json({
+        return res.status(404).json({
           ok: 0,
           errorMessage: 'cannot find user !',
         });
@@ -57,7 +57,7 @@ const checkAuth = (identity) => {
       switch (identity) {
         case 'admin':
           if (user.AuthTypeId !== 3)
-            return res.status(401).json({
+            return res.status(403).json({
               ok: 0,
               errorMessage: 'permission denied',
             });
@@ -65,9 +65,9 @@ const checkAuth = (identity) => {
         case 'teacher':
           // 尚未成為 Teacher
           if (!user.Teacher)
-            return res.status(401).json({
+            return res.status(403).json({
               ok: 0,
-              errorMessage: 'You are not teacher yet',
+              errorMessage: 'permission denied',
             });
           req.TeacherId = user.Teacher.id;
           return next();
