@@ -1,5 +1,5 @@
 const db = require('../models');
-const { Course, Teacher, Paid_course } = db;
+const { Course, Teacher, Order, Order_item } = db;
 
 const courseController = {
   getCourseList: (req, res) => {
@@ -63,9 +63,10 @@ const courseController = {
     }
     Course.findOne({
       where,
-      include: [Teacher, Paid_course],
+      include: [Teacher, {model: Order_item, include: Order}],
     })
       .then((course) => {
+        console.log('new', course)
         if (!course)
           return res.status(404).json({
             ok: 0,
@@ -73,8 +74,9 @@ const courseController = {
           });
         // 從已購買此堂課的 user 中尋找是否有當前使用者
         let isCourseBought = false;
-        for (const record of course.Paid_courses) {
-          if (req.userId === Number(record.UserId)) {
+        for (const record of course.Order_items) {
+          console.log(record)
+          if (req.userId === Number(record.Order.UserId)) {
             isCourseBought = true;
             break;
           }
@@ -203,14 +205,15 @@ const courseController = {
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
     let order = _order || 'ASC';
-    Paid_course.findAll({
-      where: { userId: req.userId },
-      include: [{ model: Course, include: [Teacher] }],
+    Order_item.findAll({
+      where: { '$Order.UserId$': req.userId },
+      include: [Order, { model: Course, include: [Teacher] }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
     })
       .then((myCourseList) => {
+        console.log('myCourseList', myCourseList)
         if (myCourseList.length === 0)
           return res.status(404).json({
             ok: 0,

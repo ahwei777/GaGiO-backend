@@ -20,9 +20,6 @@ module.exports = {
       sumPrice: {
         type: Sequelize.INTEGER
       },
-      orderCourses: {
-        type: Sequelize.STRING
-      },
       isPaid: {
         type: Sequelize.BOOLEAN
       },

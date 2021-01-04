@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Order.belongsTo(models.User)
+      Order.hasMany(models.Order_item)
     }
   };
   Order.init({
@@ -18,7 +19,6 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     paymentType: DataTypes.STRING,
     sumPrice: DataTypes.INTEGER,
-    orderCourses: DataTypes.STRING,
     isPaid: DataTypes.BOOLEAN
   }, {
     sequelize,

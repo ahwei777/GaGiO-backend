@@ -36,7 +36,9 @@ router.post("/cart-item/:id", checkAuth(), cartController.addCartItem);
 router.delete("/cart-item/:id", checkAuth(), cartController.deleteCartItem);
 
 // order
-router.post('/order/new', checkAuth(), orderController.receiveOrder);
+router.get('/orders', checkAuth('admin'), orderController.getOrderList);
+router.get('/orders/:id', checkAuth(), orderController.getOrder);
+router.post('/orders/new', checkAuth(), orderController.receiveOrder);
 
 // teacher
 router.get("/teachers", getAuth(), teacherController.getTeacherList);

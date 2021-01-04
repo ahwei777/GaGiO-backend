@@ -20,6 +20,7 @@ const courseController = {
       order: [[sort, order]],
     })
       .then((cart_items) => {
+        console.log('cart_items', cart_items)
         if (cart_items.length === 0)
           return res.status(404).json({
             ok: 0,
@@ -46,9 +47,11 @@ const courseController = {
         UserId: req.userId,
         CourseId: req.params.id,
         deletedAt: null,
+        checkedOutAt: null,
       }
     })
-    if (searchItem !== null) {
+    console.log('searchItem', searchItem)
+    if (searchItem) {
       return res.status(404).json({
         ok: 0,
         errorMessage: "This course is already in your cart",

@@ -1,9 +1,66 @@
 const { Op } = require("sequelize");
 const db = require('../models');
 const { sequelize } = require('../models');
-const { Order, Paid_course, Cart_item } = db;
+const { Order, Order_item, Cart_item } = db;
 
 const orderController = {
+  getOrderList: (req, res) => {
+    const { _page, _limit, _sort, _order } = req.query;
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    Order.findAll({
+      offset: _page ? (_page - 1) * CoursesPerPage : 0,
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+    })
+      .then((orderList) => {
+        if (orderList.length === 0)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available orders',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            orderList,
+          },
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
+  getOrder: (req, res) => {
+    Order.findOne({
+      where: {
+        id: req.params.id,
+      },
+      include: [Order_item],
+    })
+      .then((order) => {
+        if (!order)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available order',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            order
+          },
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
   receiveOrder: async (req, res) => {
     const { name, orderCourses, paymentType, sumPrice } = req.body;
     console.log(req.body);
@@ -16,39 +73,34 @@ const orderController = {
     // 檢查有無重複購買或非公開課程
     console.log('orderCourses', orderCourses);
     try {
-      const setOrder = await Order.create({
-        // 身分驗證
-        UserId: req.userId,
-        name,
-        paymentType,
-        sumPrice,
-        orderCourses: JSON.stringify(orderCourses),
-        // 付款驗證
-        isPaid: true,
-      });
-      if (!setOrder) {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: 'send order failed',
-        });
-      }
-
       // 開始 transaction 全部成功或全部失敗
-
       // 依照付款資料授權課程給 user
       await sequelize.transaction(async (t) => {
-        await Paid_course.bulkCreate(
+        const newOrder = await Order.create({
+          // 身分驗證
+          UserId: req.userId,
+          name,
+          paymentType,
+          sumPrice,
+          orderCourses: JSON.stringify(orderCourses),
+          // 付款驗證
+          isPaid: true,
+        });
+        if (!newOrder) {
+          return res.status(400).json({
+            ok: 0,
+            errorMessage: 'send order failed',
+          });
+        }
+        await Order_item.bulkCreate(
           orderCourses.map((el, i) => {
             return {
               // 身分驗證
-              UserId: req.userId,
+              OrderId: newOrder.id,
               CourseId: el.CourseId,
               amountPaid: el.amountPaid,
             };
           }),
-          {
-            returning: true,
-          },
           { transaction: t }
         );
 
@@ -105,31 +157,6 @@ const orderController = {
         errorMessage: error.toString(),
       });
     }
-  },
-  deleteCartItem: (req, res) => {
-    Cart_item.update(
-      { deletedAt: new Date() },
-      {
-        where: {
-          // 權限管理
-          UserId: req.userId,
-          CourseId: req.params.id,
-        },
-      }
-    )
-      .then((result) => {
-        console.log(result);
-        // success
-        return res.status(200).json({
-          ok: 1,
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
   },
 };
 
