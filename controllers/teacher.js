@@ -11,7 +11,7 @@ const teacherController = {
       deletedAt: null,
       isPublic: 1,
     };
-    if (req.AuthTypeId === 3) {
+    if (req.authTypeId === 3) {
       where = {
         deletedAt: null,
       };
@@ -47,7 +47,7 @@ const teacherController = {
       deletedAt: null,
       isPublic: 1,
     };
-    if (req.AuthTypeId === 3) {
+    if (req.authTypeId === 3) {
       where = {
         deletedAt: null,
       };
