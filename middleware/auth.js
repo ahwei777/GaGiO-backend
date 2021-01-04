@@ -1,7 +1,7 @@
 const db = require('../models');
 const jwt = require('jsonwebtoken');
 const jwtSecretKey = process.env.JWT_KEY || 'test_key';
-const { User, Course, Teacher, Unit } = db;
+const { User, Course, Paid_course, Teacher, Unit } = db;
 
 const setToken = (userId) => {
   const token = jwt.sign({ userId: userId.toString() }, jwtSecretKey, {
@@ -28,46 +28,45 @@ const checkAuth = (identity) => {
         ok: 0,
         errorMessage: 'cannot find token !',
       });
-    User.findByPk(userId).then((user) => {
+    User.findByPk(userId, {
+      include: [
+        { model: Teacher, attributes: ['id'] },
+        //{ model: Paid_course, attributes: ['CourseId'] },
+      ],
+    }).then((user) => {
+      console.log('user', user);
       if (!user)
         return res.status(400).json({
           ok: 0,
           errorMessage: 'cannot find user !',
         });
       // req 內設置 id 便於後續取得使用者身分進行操作
-      req.userId = user.dataValues.id;
-      req.AuthTypeId = user.dataValues.AuthTypeId;
+      req.userId = user.id;
+      req.AuthTypeId = user.AuthTypeId;
       switch (identity) {
-        case 1:
-          if (!user.AuthTypeId)
-            return res.status(401).json({
-              ok: 0,
-              errorMessage: 'permission denied',
-            });
-          next();
-          break;
-        case 2:
-          if (user.AuthTypeId !== 2)
-            return res.status(401).json({
-              ok: 0,
-              errorMessage: 'permission denied',
-            });
-          next();
-          break;
-        case 3:
+        case 'admin':
           if (user.AuthTypeId !== 3)
             return res.status(401).json({
               ok: 0,
               errorMessage: 'permission denied',
             });
-          next();
-          break;
+          return next();
+        case 'teacher':
+          // 尚未成為 Teacher
+          if (!user.Teacher)
+            return res.status(401).json({
+              ok: 0,
+              errorMessage: 'You are not teacher yet',
+            });
+          req.TeacherId = user.Teacher.id;
+          return next();
         default:
-          next();
+          return next();
       }
     });
   };
 };
+
 const checkTeacher = (courseId, userId) => {
   return Course.findOne({
     where: { id: courseId, deletedAt: null },
@@ -123,11 +122,35 @@ const getAuth = () => {
     if (!userId) return next();
     User.findByPk(userId).then((user) => {
       // req 內設置 AuthTypeId 便於後續取得使用者身分進行操作
+      req.userId = user.id;
       req.AuthTypeId = user.dataValues.AuthTypeId;
+      console.log(user);
       return next();
     });
   };
 };
+
+// 判斷該課程是否已購買
+checkCourseAuth = () => {
+  return (req, res, next) => {
+    const UserId = req.userId;
+    const CourseId = req.params.id;
+    if (!UserId) {
+      req.isCourseBought = false;
+      return next();
+    }
+    Paid_course.findOne({ where: { CourseId, UserId } }).then((result) => {
+      console.log('check', result);
+      if (!result) {
+        req.isCourseBought = false;
+        return next();
+      }
+      req.isCourseBought = true;
+      return next();
+    });
+  };
+};
+
 
 module.exports = {
   setToken,
@@ -135,4 +158,5 @@ module.exports = {
   checkAuth,
   checkTeacherAuth,
   getAuth,
+  checkCourseAuth,
 };

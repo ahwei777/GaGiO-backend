@@ -12,6 +12,7 @@ const courseController = {
         // 權限管理
         UserId: req.userId,
         deletedAt: null,
+        checkedOutAt: null,
       },
       include: [Course],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
@@ -39,6 +40,7 @@ const courseController = {
       });
   },
   addCartItem: async (req, res) => {
+    // 檢查購物車內是否已有重複課程
     const searchItem = await Cart_item.findOne({
       where: {
         UserId: req.userId,
@@ -46,14 +48,20 @@ const courseController = {
         deletedAt: null,
       }
     })
-    console.log('yo', searchItem)
     if (searchItem !== null) {
       return res.status(400).json({
         ok: 0,
         errorMessage: "This course is already in your cart",
       });
     }
-    console.log('searchItem', searchItem)
+    // 檢查該課程是否公開
+    const searchCourse = await Course.findByPk(req.params.id);
+    if (!searchCourse.isPublic) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: "This course is non-public",
+      });
+    }
     Cart_item.create({
       // 權限管理
       UserId: req.userId,
