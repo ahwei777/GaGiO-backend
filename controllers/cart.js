@@ -12,6 +12,7 @@ const courseController = {
         // 權限管理
         UserId: req.userId,
         deletedAt: null,
+        checkedOutAt: null,
       },
       include: [Course],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
@@ -19,6 +20,7 @@ const courseController = {
       order: [[sort, order]],
     })
       .then((cart_items) => {
+        console.log('cart_items', cart_items)
         if (cart_items.length === 0)
           return res.status(404).json({
             ok: 0,
@@ -39,21 +41,30 @@ const courseController = {
       });
   },
   addCartItem: async (req, res) => {
+    // 檢查購物車內是否已有重複課程
     const searchItem = await Cart_item.findOne({
       where: {
         UserId: req.userId,
         CourseId: req.params.id,
         deletedAt: null,
+        checkedOutAt: null,
       }
     })
-    console.log('yo', searchItem)
-    if (searchItem !== null) {
-      return res.status(400).json({
+    console.log('searchItem', searchItem)
+    if (searchItem) {
+      return res.status(404).json({
         ok: 0,
         errorMessage: "This course is already in your cart",
       });
     }
-    console.log('searchItem', searchItem)
+    // 檢查該課程是否公開
+    const searchCourse = await Course.findByPk(req.params.id);
+    if (!searchCourse.isPublic) {
+      return res.status(404).json({
+        ok: 0,
+        errorMessage: "This course is non-public",
+      });
+    }
     Cart_item.create({
       // 權限管理
       UserId: req.userId,
@@ -64,6 +75,7 @@ const courseController = {
         // success
         return res.status(200).json({
           ok: 1,
+          message: 'success',
         });
       })
       .catch((error) => {
@@ -74,21 +86,32 @@ const courseController = {
       });
   },
   deleteCartItem: (req, res) => {
-    Cart_item.update(
-      { deletedAt: new Date() },
+    Cart_item.findOne(
       {
         where: {
           // 權限管理
           UserId: req.userId,
           CourseId: req.params.id,
+          deletedAt: null,
         },
+        order: [['id', 'DESC']],
       }
     )
+      .then((record) => {
+        // 不存在
+        if (!record) {
+          return res.status(404).json({
+            ok: 0,
+            message: 'This course is not in your cart',
+          });
+        }
+        return record.update({ deletedAt: new Date() })
+      })
       .then((result) => {
-        console.log(result);
         // success
         return res.status(200).json({
           ok: 1,
+          message: 'success',
         });
       })
       .catch((error) => {

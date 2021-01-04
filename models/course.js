@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Course.belongsTo(models.Teacher);
       Course.hasMany(models.Cart_item);
+      Course.hasMany(models.Order_item);
       Course.hasOne(models.Unit);
     }
   }

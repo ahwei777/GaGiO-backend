@@ -19,55 +19,65 @@ const checkToken = (req) => {
   });
 };
 
-// 一般會員 1, 管理員 3,（開課者 2）
-const checkAuth = (identity) => {
+const getAuth = () => {
   return (req, res, next) => {
     const userId = checkToken(req) || "";
+    if (!userId) return next();
+    User.findByPk(userId).then((user) => {
+      // req 內設置 userId, AuthTypeId 便於後續取得使用者身分進行操作
+      req.userId = user.id;
+      req.authTypeId = user.AuthTypeId;
+      return next();
+    });
+  };
+};
+
+const checkAuth = (identity) => {
+  return (req, res, next) => {
+    const userId = checkToken(req) || '';
     if (!userId)
       return res.status(400).json({
         ok: 0,
-        errorMessage: "cannot find token !",
+        errorMessage: 'cannot find token !',
       });
-    User.findByPk(userId).then((user) => {
+    User.findByPk(userId, {
+      include: [
+        { model: Teacher, attributes: ['id'] },
+      ],
+    }).then((user) => {
+      console.log('user', user);
       if (!user)
-        return res.status(400).json({
+        return res.status(404).json({
           ok: 0,
-          errorMessage: "cannot find user !",
+          errorMessage: 'cannot find user !',
         });
       // req 內設置 id 便於後續取得使用者身分進行操作
-      req.userId = user.dataValues.id;
-      req.AuthTypeId = user.dataValues.AuthTypeId;
+      req.userId = user.id;
+      req.authTypeId = user.AuthTypeId;
       switch (identity) {
-        case 1:
-          if (!user.AuthTypeId)
-            return res.status(401).json({
-              ok: 0,
-              errorMessage: "permission denied",
-            });
-          next();
-          break;
-        case 2:
-          if (user.AuthTypeId !== 2)
-            return res.status(401).json({
-              ok: 0,
-              errorMessage: "permission denied",
-            });
-          next();
-          break;
-        case 3:
+        case 'admin':
           if (user.AuthTypeId !== 3)
-            return res.status(401).json({
+            return res.status(403).json({
               ok: 0,
-              errorMessage: "permission denied",
+              errorMessage: 'permission denied',
             });
-          next();
-          break;
+          return next();
+        case 'teacher':
+          // 尚未成為 Teacher
+          if (!user.Teacher)
+            return res.status(403).json({
+              ok: 0,
+              errorMessage: 'permission denied',
+            });
+          req.TeacherId = user.Teacher.id;
+          return next();
         default:
-          next();
+          return next();
       }
     });
   };
 };
+
 const checkTeacher = (courseId, userId) => {
   return Course.findOne({
     where: { id: courseId, deletedAt: null },
@@ -137,18 +147,6 @@ const checkTeacherAuth = (controller) => {
         });
         break;
     }
-  };
-};
-
-const getAuth = () => {
-  return (req, res, next) => {
-    const userId = checkToken(req) || "";
-    if (!userId) return next();
-    User.findByPk(userId).then((user) => {
-      // req 內設置 AuthTypeId 便於後續取得使用者身分進行操作
-      req.AuthTypeId = user.dataValues.AuthTypeId;
-      return next();
-    });
   };
 };
 
