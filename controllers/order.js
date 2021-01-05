@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op } = require('sequelize');
 const db = require('../models');
 const { sequelize } = require('../models');
 const { Order, Order_item, Cart_item } = db;
@@ -9,10 +9,45 @@ const orderController = {
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
     let order = _order || 'ASC';
+    let where = req.query.UserId ? { UserId } : '';
     Order.findAll({
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
+      where,
+    })
+      .then((orderList) => {
+        if (orderList.length === 0)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available orders',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            orderList,
+          },
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
+  getMyOrderList: (req, res) => {
+    const { _page, _limit, _sort, _order } = req.query;
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    Order.findAll({
+      offset: _page ? (_page - 1) * CoursesPerPage : 0,
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+      where: {
+        UserId: req.userId,
+      },
     })
       .then((orderList) => {
         if (orderList.length === 0)
@@ -35,10 +70,15 @@ const orderController = {
       });
   },
   getOrder: (req, res) => {
+    // 管理員才可查看非自己的訂單
+    let where =
+      req.authTypeId === 3
+        ? {
+            id: req.params.id,
+          }
+        : { id: req.params.id, userId: req.userId };
     Order.findOne({
-      where: {
-        id: req.params.id,
-      },
+      where,
       include: [Order_item],
     })
       .then((order) => {
@@ -50,7 +90,7 @@ const orderController = {
         return res.status(200).json({
           ok: 1,
           data: {
-            order
+            order,
           },
         });
       })
@@ -110,6 +150,7 @@ const orderController = {
           { checkedOutAt: new Date() },
           {
             where: {
+              deletedAt: null,
               UserId: req.userId,
               CourseId: {
                 [Op.in]: orderCourses.map((el) => {
@@ -128,7 +169,7 @@ const orderController = {
         ok: 1,
         data: {
           orderNumber: setOrder.id,
-        }
+        },
       });
 
       /*

@@ -33,7 +33,7 @@ const unitController = {
               data: {
                 title: course.title,
                 imgUrl: course.imgUrl,
-                unit_list: units.unit_list.unit_list,
+                unit_list: JSON.parse(units.unit_list).unit_list,
               },
             });
           })

@@ -37,6 +37,7 @@ router.delete("/cart-item/:id", checkAuth(), cartController.deleteCartItem);
 
 // order
 router.get('/orders', checkAuth('admin'), orderController.getOrderList);
+router.get('/orders/me', checkAuth(), orderController.getMyOrderList);
 router.get('/orders/:id', checkAuth(), orderController.getOrder);
 router.post('/orders/new', checkAuth(), orderController.receiveOrder);
 
