@@ -115,7 +115,7 @@ const unitController = {
           });
         Unit.update(
           {
-            unit_list,
+            unit_list: JSON.stringify(unit_list),
           },
           { where: { id: unitListId } }
         )
