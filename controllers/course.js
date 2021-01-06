@@ -1,13 +1,13 @@
-const db = require('../models');
-const { Course, Teacher, Order, Order_item } = db;
+const db = require("../models");
+const { Course, Teacher, Order, Order_item, Unit } = db;
 
 const courseController = {
   getCourseList: (req, res) => {
     console.log(req.query);
     const { _page, _limit, _sort, _order, TeacherId } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     let where = {
       deletedAt: null,
       isPublic: 1,
@@ -32,7 +32,7 @@ const courseController = {
         if (courseList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: "No available courses",
           });
         return res.status(200).json({
           ok: 1,
@@ -63,19 +63,19 @@ const courseController = {
     }
     Course.findOne({
       where,
-      include: [Teacher, {model: Order_item, include: Order}],
+      include: [Teacher, { model: Order_item, include: Order }],
     })
       .then((course) => {
-        console.log('new', course)
+        console.log("new", course);
         if (!course)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'Cannot find course or the course is non-public',
+            errorMessage: "Cannot find course or the course is non-public",
           });
         // 從已購買此堂課的 user 中尋找是否有當前使用者
         let isCourseBought = false;
         for (const record of course.Order_items) {
-          console.log(record)
+          console.log(record);
           if (req.userId === Number(record.Order.UserId)) {
             isCourseBought = true;
             break;
@@ -103,7 +103,7 @@ const courseController = {
     if (!title || !description || !price) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全',
+        errorMessage: "資料不齊全",
       });
     }
     Course.create({
@@ -111,15 +111,29 @@ const courseController = {
       title,
       description,
       price,
-      imgUrl: 'https://i.imgur.com/q4rE8Sd.jpg',
+      imgUrl: "https://i.imgur.com/q4rE8Sd.jpg",
       isPublic: false,
     })
       .then((result) => {
         console.log(result);
         // success
-        return res.status(200).json({
-          ok: 1,
-          data: result,
+        Unit.create({
+          CourseId: result.id,
+          TeacherId: req.TeacherId,
+          unit_list: JSON.stringify({
+            unit_list: [],
+          }),
+        }).then((unit) => {
+          return res.status(200).json({
+            ok: 1,
+            data: {
+              course: result,
+              unit_list: {
+                id: unit.id,
+                unit_list: unit.unit_list.unit_list,
+              },
+            },
+          });
         });
       })
       .catch((error) => {
@@ -162,7 +176,7 @@ const courseController = {
     if (!title || !description || !price || isPublic === undefined) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全',
+        errorMessage: "資料不齊全",
       });
     }
     Course.update(
@@ -184,13 +198,13 @@ const courseController = {
         if (!affectedRows[0]) {
           return res.status(404).json({
             ok: 0,
-            message: 'No available course',
+            message: "No available course",
           });
         }
         // success
         return res.status(200).json({
           ok: 1,
-          message: 'success',
+          message: "success",
         });
       })
       .catch((error) => {
@@ -203,21 +217,21 @@ const courseController = {
   getMyCourseList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     Order_item.findAll({
-      where: { '$Order.UserId$': req.userId },
+      where: { "$Order.UserId$": req.userId },
       include: [Order, { model: Course, include: [Teacher] }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
     })
       .then((myCourseList) => {
-        console.log('myCourseList', myCourseList)
+        console.log("myCourseList", myCourseList);
         if (myCourseList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: "No available courses",
           });
         return res.status(200).json({
           ok: 1,
