@@ -28,6 +28,190 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
+        {
+          CourseId: 2,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 3,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 4,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 5,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 6,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 7,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 8,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          CourseId: 9,
+          TeacherId: 1,
+          unit_list: JSON.stringify({
+            unit_list: [
+              {
+                id: 1,
+                title: "Writing a React component",
+                discription: "test",
+                videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
+              },
+              { id: 2, title: "React life-cycle" },
+              { id: 3, title: "The React state" },
+              {
+                id: 4,
+                title: "Understanding component props and re-rendering",
+              },
+              { id: 5, title: "Importing CSS into React components" },
+            ],
+          }),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       ],
       {}
     );
