@@ -72,7 +72,6 @@ const userController = {
   },
   login: (req, res) => {
     const { email, password } = req.body;
-    console.log(email, password);
     if (!email || !password)
       return res.status(400).json({
         ok: 0,
@@ -131,7 +130,6 @@ const userController = {
   },
   getMe: (req, res) => {
     const userId = checkToken(req);
-    console.log("userId", userId);
     if (!userId)
       return res.status(400).json({
         ok: 0,
@@ -235,7 +233,6 @@ const userController = {
           },
           { where: { id: userId } }
         ).then((updatedUser) => {
-          console.log(updatedUser);
           return res.status(200).json({
             ok: 1,
             data: {
@@ -262,19 +259,22 @@ const userController = {
     if (token !== userId)
       return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
     const { password } = req.body;
+    const newPassword = bcrypt.hashSync(password, 10);
+    console.log("newPassword", newPassword);
     User.update(
       {
-        password,
+        password: newPassword,
       },
       { where: { id: userId } }
     )
       .then((updatedUser) => {
+        const newToken = setToken(userId);
         return res.status(200).json({
           ok: 1,
           data: {
             user: {
               id: userId,
-              token: token,
+              token: newToken,
             },
           },
         });
