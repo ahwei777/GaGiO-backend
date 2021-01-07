@@ -1,7 +1,9 @@
 const db = require("../models");
 const bcrypt = require("bcrypt");
-const { User } = db;
+const { User, Course, Order, Order_item } = db;
 const { setToken, checkAuth, checkToken } = require("../middleware/auth");
+const courseController = require("./course");
+const order_item = require("../models/order_item");
 
 const emailRegExp = /^([\w\.\-]){1,64}\@([\w\.\-]){1,64}$/;
 const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
@@ -188,8 +190,23 @@ const userController = {
   },
   getUser: (req, res) => {
     const userId = req.params.id;
-    User.findByPk(userId)
+    User.findByPk(userId, {
+      include: {
+        model: Order,
+        attributes: [["id", "OrderId"]],
+        where: { UserId: userId },
+        include: {
+          model: Order_item,
+          attributes: ["CourseId"],
+          include: { model: Course, attributes: [["title", "CourseTitle"]] },
+        },
+      },
+    })
       .then((user) => {
+        let courseList = [];
+        user.Orders.forEach((order) =>
+          order.Order_items.forEach((course) => courseList.push(course))
+        );
         if (!user)
           return res.status(404).json({
             ok: 0,
@@ -203,6 +220,7 @@ const userController = {
               email: user.email,
               nickname: user.nickname,
               updated_at: user.updatedAt,
+              courseList,
             },
           },
         });
