@@ -3,7 +3,6 @@ const { Course, Teacher, Order, Order_item, Unit } = db;
 
 const courseController = {
   getCourseList: (req, res) => {
-    console.log(req.query);
     const { _page, _limit, _sort, _order, TeacherId } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || "id";
@@ -36,9 +35,7 @@ const courseController = {
           });
         return res.status(200).json({
           ok: 1,
-          data: {
-            courseList,
-          },
+          data: courseList,
         });
       })
       .catch((error) => {
@@ -63,31 +60,31 @@ const courseController = {
     }
     Course.findOne({
       where,
-      include: [Teacher, { model: Order_item, include: Order }],
+      include: [Unit, Teacher, { model: Order_item, include: Order }],
     })
-      .then((course) => {
-        console.log("new", course);
-        if (!course)
+      .then((result) => {
+        if (!result)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "Cannot find course or the course is non-public",
+            errorMessage: 'Cannot find course or the course is non-public',
           });
         // 從已購買此堂課的 user 中尋找是否有當前使用者
         let isCourseBought = false;
-        for (const record of course.Order_items) {
+        for (const record of result.Order_items) {
           console.log(record);
           if (req.userId === Number(record.Order.UserId)) {
             isCourseBought = true;
             break;
           }
         }
+        // 整理 unitList
+        const unit_list = JSON.parse(result.Unit.unit_list).unit_list;
         return res.status(200).json({
           ok: 1,
           data: {
-            course: {
-              ...course.dataValues,
-              isCourseBought,
-            },
+            ...result.dataValues,
+            unit_title: unit_list.map((el) => el.title),
+            isCourseBought,
           },
         });
       })
@@ -100,10 +97,13 @@ const courseController = {
   },
   addCourse: (req, res) => {
     const { title, description, price } = req.body;
-    if (!title || !description || !price) {
+    // 金額為非負整數
+    const isPriceValid = /^\d+$/;
+    if (!title || !description || !isPriceValid.test(price)) {
+      console.log('error type')
       return res.status(400).json({
         ok: 0,
-        errorMessage: "資料不齊全",
+        errorMessage: '資料不齊全或格式錯誤',
       });
     }
     Course.create({
@@ -114,25 +114,18 @@ const courseController = {
       imgUrl: "https://i.imgur.com/q4rE8Sd.jpg",
       isPublic: false,
     })
-      .then((result) => {
-        console.log(result);
+      .then((newCourse) => {
         // success
         Unit.create({
-          CourseId: result.id,
+          CourseId: newCourse.id,
           TeacherId: req.TeacherId,
           unit_list: JSON.stringify({
             unit_list: [],
           }),
-        }).then((unit) => {
+        }).then((result) => {
           return res.status(200).json({
             ok: 1,
-            data: {
-              course: result,
-              unit_list: {
-                id: unit.id,
-                unit_list: unit.unit_list.unit_list,
-              },
-            },
+            message: "success",
           });
         });
       })
@@ -156,11 +149,10 @@ const courseController = {
       }
     )
       .then((result) => {
-        console.log(result);
         // success
         return res.status(200).json({
           ok: 1,
-          data: result,
+          message: "success",
         });
       })
       .catch((error) => {
@@ -214,30 +206,63 @@ const courseController = {
         });
       });
   },
-  getMyCourseList: (req, res) => {
+  getMyBoughtCourse: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || "id";
-    let order = _order || "ASC";
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
     Order_item.findAll({
-      where: { "$Order.UserId$": req.userId },
+      where: { '$Order.UserId$': req.userId },
       include: [Order, { model: Course, include: [Teacher] }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
     })
-      .then((myCourseList) => {
-        console.log("myCourseList", myCourseList);
-        if (myCourseList.length === 0)
+      .then((result) => {
+        if (result.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "No available courses",
+            errorMessage: 'No available courses',
           });
         return res.status(200).json({
           ok: 1,
-          data: {
-            myCourseList,
-          },
+          data: result.map((el) => el.Course),
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
+  getBoughtCourse: (req, res) => {
+    const { _page, _limit, _sort, _order, UserId } = req.query;
+    if (!UserId) {
+      return res.status(404).json({
+        ok: 0,
+        errorMessage: 'UserId is necessary',
+      });
+    }
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    Order_item.findAll({
+      where: { '$Order.UserId$': UserId },
+      include: [Order, { model: Course }],
+      offset: _page ? (_page - 1) * CoursesPerPage : 0,
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+    })
+      .then((result) => {
+        if (result.length === 0)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available courses',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: result.map((el) => el.Course),
         });
       })
       .catch((error) => {

@@ -112,6 +112,7 @@ const orderController = {
     }
     // 檢查有無重複購買或非公開課程
     console.log("orderCourses", orderCourses);
+    let newOrderId;
     try {
       // 開始 transaction 全部成功或全部失敗
       // 依照付款資料授權課程給 user
@@ -132,6 +133,7 @@ const orderController = {
             errorMessage: "send order failed",
           });
         }
+        newOrderId = newOrder.id;
         await Order_item.bulkCreate(
           orderCourses.map((el, i) => {
             return {
@@ -164,12 +166,10 @@ const orderController = {
       });
 
       // 所有作業完成
-      console.log("收到訂單，orderId: ", setOrder.id);
+      console.log("收到訂單，orderId: ", newOrderId);
       return res.status(200).json({
         ok: 1,
-        data: {
-          orderNumber: setOrder.id,
-        },
+        orderNumber: newOrderId,
       });
 
       /*

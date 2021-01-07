@@ -43,7 +43,6 @@ const checkAuth = (identity) => {
     User.findByPk(userId, {
       include: [{ model: Teacher, attributes: ["id"] }],
     }).then((user) => {
-      console.log("user", user);
       if (!user)
         return res.status(404).json({
           ok: 0,
