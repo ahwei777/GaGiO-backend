@@ -34,40 +34,38 @@ const getAuth = () => {
 
 const checkAuth = (identity) => {
   return (req, res, next) => {
-    const userId = checkToken(req) || '';
+    const userId = checkToken(req) || "";
     if (!userId)
       return res.status(400).json({
         ok: 0,
-        errorMessage: 'cannot find token !',
+        errorMessage: "cannot find token!",
       });
     User.findByPk(userId, {
-      include: [
-        { model: Teacher, attributes: ['id'] },
-      ],
+      include: [{ model: Teacher, attributes: ["id"] }],
     }).then((user) => {
-      console.log('user', user);
+      console.log("user", user);
       if (!user)
         return res.status(404).json({
           ok: 0,
-          errorMessage: 'cannot find user !',
+          errorMessage: "cannot find user !",
         });
       // req 內設置 id 便於後續取得使用者身分進行操作
       req.userId = user.id;
       req.authTypeId = user.AuthTypeId;
       switch (identity) {
-        case 'admin':
+        case "admin":
           if (user.AuthTypeId !== 3)
             return res.status(403).json({
               ok: 0,
-              errorMessage: 'permission denied',
+              errorMessage: "permission denied",
             });
           return next();
-        case 'teacher':
+        case "teacher":
           // 尚未成為 Teacher
           if (!user.Teacher)
             return res.status(403).json({
               ok: 0,
-              errorMessage: 'permission denied',
+              errorMessage: "permission denied",
             });
           req.TeacherId = user.Teacher.id;
           return next();

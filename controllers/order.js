@@ -1,15 +1,15 @@
-const { Op } = require('sequelize');
-const db = require('../models');
-const { sequelize } = require('../models');
+const { Op } = require("sequelize");
+const db = require("../models");
+const { sequelize } = require("../models");
 const { Order, Order_item, Cart_item } = db;
 
 const orderController = {
   getOrderList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
-    let where = req.query.UserId ? { UserId } : '';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
+    let where = req.query.UserId ? { UserId } : "";
     Order.findAll({
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -20,7 +20,7 @@ const orderController = {
         if (orderList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available orders',
+            errorMessage: "No available orders",
           });
         return res.status(200).json({
           ok: 1,
@@ -39,8 +39,8 @@ const orderController = {
   getMyOrderList: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     Order.findAll({
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -53,7 +53,7 @@ const orderController = {
         if (orderList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available orders',
+            errorMessage: "No available orders",
           });
         return res.status(200).json({
           ok: 1,
@@ -85,7 +85,7 @@ const orderController = {
         if (!order)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available order',
+            errorMessage: "No available order",
           });
         return res.status(200).json({
           ok: 1,
@@ -107,11 +107,11 @@ const orderController = {
     if (!name || !orderCourses || !paymentType || !sumPrice) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全',
+        errorMessage: "資料不齊全",
       });
     }
     // 檢查有無重複購買或非公開課程
-    console.log('orderCourses', orderCourses);
+    console.log("orderCourses", orderCourses);
     try {
       // 開始 transaction 全部成功或全部失敗
       // 依照付款資料授權課程給 user
@@ -129,7 +129,7 @@ const orderController = {
         if (!newOrder) {
           return res.status(400).json({
             ok: 0,
-            errorMessage: 'send order failed',
+            errorMessage: "send order failed",
           });
         }
         await Order_item.bulkCreate(
@@ -164,7 +164,7 @@ const orderController = {
       });
 
       // 所有作業完成
-      console.log('收到訂單，orderId: ', setOrder.id);
+      console.log("收到訂單，orderId: ", setOrder.id);
       return res.status(200).json({
         ok: 1,
         data: {
