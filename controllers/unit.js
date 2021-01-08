@@ -1,5 +1,5 @@
 const db = require("../models");
-const { Unit, Course, Teacher } = db;
+const { Unit, Course, Teacher, User } = db;
 const { checkToken } = require("../middleware/auth");
 
 const unitController = {
@@ -89,7 +89,6 @@ const unitController = {
       });
     Unit.create({
       CourseId: courseId,
-      TeacherId: userId,
       unit_list,
     }).then((unit) => {
       return res.status(200).json({

@@ -7,13 +7,12 @@ module.exports = {
       [
         {
           CourseId: 1,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -30,13 +29,12 @@ module.exports = {
         },
         {
           CourseId: 2,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -53,13 +51,12 @@ module.exports = {
         },
         {
           CourseId: 3,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -76,13 +73,12 @@ module.exports = {
         },
         {
           CourseId: 4,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -99,13 +95,12 @@ module.exports = {
         },
         {
           CourseId: 5,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -122,13 +117,12 @@ module.exports = {
         },
         {
           CourseId: 6,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -145,13 +139,12 @@ module.exports = {
         },
         {
           CourseId: 7,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -168,13 +161,12 @@ module.exports = {
         },
         {
           CourseId: 8,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },
@@ -191,13 +183,12 @@ module.exports = {
         },
         {
           CourseId: 9,
-          TeacherId: 1,
           unit_list: JSON.stringify({
             unit_list: [
               {
                 id: 1,
                 title: "Writing a React component",
-                discription: "test",
+                description: "test",
                 videoUrl: "https://www.youtube.com/watch?v=0lrHhK5wYgo",
               },
               { id: 2, title: "React life-cycle" },

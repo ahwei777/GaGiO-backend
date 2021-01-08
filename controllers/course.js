@@ -66,7 +66,7 @@ const courseController = {
         if (!result)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'Cannot find course or the course is non-public',
+            errorMessage: "Cannot find course or the course is non-public",
           });
         // 從已購買此堂課的 user 中尋找是否有當前使用者
         let isCourseBought = false;
@@ -100,10 +100,10 @@ const courseController = {
     // 金額為非負整數
     const isPriceValid = /^\d+$/;
     if (!title || !description || !isPriceValid.test(price)) {
-      console.log('error type')
+      console.log("error type");
       return res.status(400).json({
         ok: 0,
-        errorMessage: '資料不齊全或格式錯誤',
+        errorMessage: "資料不齊全或格式錯誤",
       });
     }
     Course.create({
@@ -118,7 +118,6 @@ const courseController = {
         // success
         Unit.create({
           CourseId: newCourse.id,
-          TeacherId: req.TeacherId,
           unit_list: JSON.stringify({
             unit_list: [],
           }),
@@ -209,10 +208,10 @@ const courseController = {
   getMyBoughtCourse: (req, res) => {
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     Order_item.findAll({
-      where: { '$Order.UserId$': req.userId },
+      where: { "$Order.UserId$": req.userId },
       include: [Order, { model: Course, include: [Teacher] }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -222,7 +221,7 @@ const courseController = {
         if (result.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: "No available courses",
           });
         return res.status(200).json({
           ok: 1,
@@ -241,14 +240,14 @@ const courseController = {
     if (!UserId) {
       return res.status(404).json({
         ok: 0,
-        errorMessage: 'UserId is necessary',
+        errorMessage: "UserId is necessary",
       });
     }
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
+    let sort = _sort || "id";
+    let order = _order || "ASC";
     Order_item.findAll({
-      where: { '$Order.UserId$': UserId },
+      where: { "$Order.UserId$": UserId },
       include: [Order, { model: Course }],
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
@@ -258,7 +257,7 @@ const courseController = {
         if (result.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: "No available courses",
           });
         return res.status(200).json({
           ok: 1,

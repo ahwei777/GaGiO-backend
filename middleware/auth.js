@@ -1,7 +1,7 @@
 const db = require("../models");
 const jwt = require("jsonwebtoken");
 const jwtSecretKey = process.env.JWT_KEY || "test_key";
-const { User, Course, Teacher, Unit } = db;
+const { User, Course, Teacher, Unit, Order, Order_item } = db;
 
 const setToken = (userId) => {
   const token = jwt.sign({ userId: userId.toString() }, jwtSecretKey, {
@@ -146,11 +146,50 @@ const checkTeacherAuth = (controller) => {
     }
   };
 };
-
+const checkCourseAuth = () => {
+  return (req, res, next) => {
+    const userId = checkToken(req);
+    const { courseId } = req.query;
+    User.findByPk(userId, { attributes: ["AuthTypeId"] }).then((userAuth) => {
+      if (userAuth === 3) return next();
+      User.findByPk(userId, {
+        attributes: ["id"],
+        include: {
+          model: Order,
+          attributes: [["id", "OrderId"]],
+          where: { UserId: userId },
+          include: {
+            model: Order_item,
+            attributes: ["CourseId"],
+          },
+        },
+      }).then((userCourseList) => {
+        if (!userCourseList)
+          return res.status(401).json({
+            ok: 0,
+            errorMessage: "Unauthorized",
+          });
+        let courseList = [];
+        userCourseList.Orders.forEach((order) =>
+          order.Order_items.forEach((course) =>
+            courseList.push(course.CourseId)
+          )
+        );
+        if (courseList.indexOf(Number(courseId)) === -1)
+          return res.status(401).json({
+            ok: 0,
+            errorMessage: "Unauthorized",
+          });
+        next();
+      });
+    });
+  };
+};
 module.exports = {
   setToken,
   checkToken,
   checkAuth,
   checkTeacherAuth,
   getAuth,
+  checkCourseAuth,
 };
