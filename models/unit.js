@@ -9,13 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Unit.belongsTo(models.Course);
-      Unit.belongsTo(models.Teacher);
     }
   }
   Unit.init(
     {
       CourseId: DataTypes.INTEGER,
-      TeacherId: DataTypes.INTEGER,
       unit_list: DataTypes.TEXT,
     },
     {

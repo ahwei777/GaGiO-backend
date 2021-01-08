@@ -194,7 +194,6 @@ const userController = {
       include: {
         model: Order,
         attributes: [["id", "OrderId"]],
-        where: { UserId: userId },
         include: {
           model: Order_item,
           attributes: ["CourseId"],
@@ -203,15 +202,16 @@ const userController = {
       },
     })
       .then((user) => {
-        let courseList = [];
-        user.Orders.forEach((order) =>
-          order.Order_items.forEach((course) => courseList.push(course))
-        );
+        console.log(user);
         if (!user)
           return res.status(404).json({
             ok: 0,
             errorMessage: "Cannot find user",
           });
+        let courseList = [];
+        user.Orders.forEach((order) =>
+          order.Order_items.forEach((course) => courseList.push(course))
+        );
         return res.status(200).json({
           ok: 1,
           data: {

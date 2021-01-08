@@ -12,10 +12,6 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
       },
-      TeacherId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-      },
       unit_list: {
         type: Sequelize.TEXT,
       },
