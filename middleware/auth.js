@@ -151,7 +151,7 @@ const checkCourseAuth = () => {
     const userId = checkToken(req);
     const { courseId } = req.query;
     User.findByPk(userId, { attributes: ["AuthTypeId"] }).then((userAuth) => {
-      if (userAuth === 3) return next();
+      if (userAuth.AuthTypeId === 3) return next();
       User.findByPk(userId, {
         attributes: ["id"],
         include: {
