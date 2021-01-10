@@ -20,7 +20,7 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 router.get("/user", checkAuth("admin"), userController.getAllUser);
 router.get("/user/:id", checkAuth("admin"), userController.getUser);
-router.patch("/user/:id", userController.updateUserInfo);
+router.patch("/user/:id", checkAuth(), userController.updateUserInfo);
 router.patch("/user/password/:id", userController.updateUserPassword);
 router.get("/me", userController.getMe);
 
