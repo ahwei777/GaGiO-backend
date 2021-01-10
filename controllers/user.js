@@ -237,9 +237,12 @@ const userController = {
   },
   updateUserInfo: (req, res) => {
     const userId = Number(req.params.id);
-    const token = Number(checkToken(req));
-    if (token !== userId)
-      return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+    const userAuthType = Number(req.authTypeId);
+    if (userAuthType !== 3) {
+      const token = Number(checkToken(req));
+      if (token !== userId)
+        return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+    }
     const { nickname, email, AuthTypeId } = req.body;
     User.findByPk(userId)
       .then((user) => {
@@ -261,7 +264,7 @@ const userController = {
                 id: userId,
                 email: newEmail,
                 nickname: newNickname,
-                AuthTypeId: newAuthTypeId,
+                auth_type: newAuthTypeId,
               },
             },
           });
