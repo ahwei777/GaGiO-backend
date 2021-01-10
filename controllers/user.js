@@ -175,6 +175,7 @@ const userController = {
                 email: user.email,
                 nickname: user.nickname,
                 auth_type: user.AuthTypeId,
+                created_at: user.createdAt,
                 updated_at: user.updatedAt,
               };
             }),
@@ -219,6 +220,8 @@ const userController = {
               id: user.id,
               email: user.email,
               nickname: user.nickname,
+              auth_type: user.AuthTypeId,
+              created_at: user.createdAt,
               updated_at: user.updatedAt,
               courseList,
             },
