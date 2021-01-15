@@ -3,7 +3,7 @@ const { Unit, Course, Teacher, User } = db;
 const { checkToken } = require("../middleware/auth");
 
 const unitController = {
-  getUnitByCourseId: (req, res) => {
+  getAllUnitsByCourseId: (req, res) => {
     const { courseId } = req.query;
     console.log(courseId);
     if (!courseId)
@@ -33,6 +33,7 @@ const unitController = {
               data: {
                 title: course.title,
                 imgUrl: course.imgUrl,
+                isPublic: course.isPublic,
                 unit_list: JSON.parse(units.unit_list).unit_list,
               },
             });
@@ -51,8 +52,8 @@ const unitController = {
         })
       );
   },
-  getUnitById: (req, res) => {
-    const unitId = req.params.id;
+  getUnitByUnitId: (req, res) => {
+    const unitId = req.params.unitId;
     if (!unitId)
       return res.status(400).json({
         ok: 0,

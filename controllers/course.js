@@ -2,7 +2,7 @@ const db = require("../models");
 const { Course, Teacher, Order, Order_item, Unit } = db;
 
 const courseController = {
-  getCourseList: (req, res) => {
+  getAllCourses: (req, res) => {
     const { _page, _limit, _sort, _order, TeacherId } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || "id";
@@ -48,14 +48,14 @@ const courseController = {
   getCourse: (req, res) => {
     let where = {
       deletedAt: null,
-      id: req.params.id,
+      id: req.params.courseId,
       isPublic: 1,
     };
     // 管理員才可取得非公開課程
     if (req.authTypeId === 3) {
       where = {
         deletedAt: null,
-        id: req.params.id,
+        id: req.params.courseId,
       };
     }
     Course.findOne({
@@ -143,7 +143,7 @@ const courseController = {
           // 為原開課者才可刪除
           TeacherId: req.TeacherId,
           deletedAt: null,
-          id: req.params.id,
+          id: req.params.courseId,
         },
       }
     )
@@ -162,7 +162,7 @@ const courseController = {
       });
   },
   updateCourse: (req, res) => {
-    const courseId = req.params.id;
+    const courseId = req.params.courseId;
     const { title, description, price, isPublic } = req.body;
     if (!title || !description || !price || isPublic === undefined) {
       return res.status(400).json({

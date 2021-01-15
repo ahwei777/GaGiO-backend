@@ -1,9 +1,9 @@
-const db = require("../models");
-const bcrypt = require("bcrypt");
-const { User, Course, Order, Order_item } = db;
-const { setToken, checkAuth, checkToken } = require("../middleware/auth");
-const courseController = require("./course");
-const order_item = require("../models/order_item");
+const db = require('../models');
+const bcrypt = require('bcrypt');
+const { User, Course, Teacher, Order, Order_item } = db;
+const { setToken, checkAuth, checkToken } = require('../middleware/auth');
+const courseController = require('./course');
+const order_item = require('../models/order_item');
 
 const emailRegExp = /^([\w\.\-]){1,64}\@([\w\.\-]){1,64}$/;
 const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
@@ -20,7 +20,7 @@ const userController = {
     if (!email || !password || !confirm || !nickname)
       return res
         .status(400)
-        .json({ ok: 0, errorMessage: "Please enter all necessary fields" });
+        .json({ ok: 0, errorMessage: 'Please enter all necessary fields' });
     if (!isEmail(email))
       return res.status(400).json({
         ok: 0,
@@ -29,7 +29,7 @@ const userController = {
     if (!isGoodPassword(password))
       return res.status(400).json({
         ok: 0,
-        errorMessage: "Please follow the rule for password",
+        errorMessage: 'Please follow the rule for password',
       });
     if (password !== confirm)
       return res.status(400).json({
@@ -40,7 +40,7 @@ const userController = {
       if (user)
         return res.status(400).json({
           ok: 0,
-          errorMessage: "email already exist",
+          errorMessage: 'email already exist',
         });
       User.create({
         email,
@@ -77,7 +77,7 @@ const userController = {
     if (!email || !password)
       return res.status(400).json({
         ok: 0,
-        errorMessage: "Please enter all necessary fields",
+        errorMessage: 'Please enter all necessary fields',
       });
     User.findOne({
       where: {
@@ -88,12 +88,12 @@ const userController = {
         if (!user)
           return res
             .status(400)
-            .json({ ok: 0, errorMessage: "Cannot find user" });
+            .json({ ok: 0, errorMessage: 'Cannot find user' });
         bcrypt.compare(password, user.password).then((result) => {
           if (!result)
             return res.status(400).json({
               ok: 0,
-              errorMessage: "wrong password",
+              errorMessage: 'wrong password',
             });
           req.session.userId = user.id;
           const token = setToken(user.id);
@@ -127,7 +127,7 @@ const userController = {
     req.session.destroy();
     return res.status(200).json({
       ok: 1,
-      data: "logout success",
+      data: 'logout success',
     });
   },
   getMe: (req, res) => {
@@ -142,7 +142,7 @@ const userController = {
         if (!user)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "Cannot find User",
+            errorMessage: 'Cannot find User',
           });
         return res.status(200).json({
           ok: 1,
@@ -194,11 +194,11 @@ const userController = {
     User.findByPk(userId, {
       include: {
         model: Order,
-        attributes: [["id", "OrderId"]],
+        attributes: [['id', 'OrderId']],
         include: {
           model: Order_item,
-          attributes: ["CourseId"],
-          include: { model: Course, attributes: [["title", "CourseTitle"]] },
+          attributes: ['CourseId'],
+          include: { model: Course, attributes: [['title', 'CourseTitle']] },
         },
       },
     })
@@ -207,7 +207,7 @@ const userController = {
         if (!user)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "Cannot find user",
+            errorMessage: 'Cannot find user',
           });
         let courseList = [];
         user.Orders.forEach((order) =>
@@ -241,7 +241,7 @@ const userController = {
     if (userAuthType !== 3) {
       const token = Number(checkToken(req));
       if (token !== userId)
-        return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+        return res.status(401).json({ ok: 0, errorMessage: 'Unauthorized' });
     }
     const { nickname, email, AuthTypeId } = req.body;
     User.findByPk(userId)
@@ -281,10 +281,10 @@ const userController = {
     const userId = req.params.id;
     const token = checkToken(req);
     if (token !== userId)
-      return res.status(401).json({ ok: 0, errorMessage: "Unauthorized" });
+      return res.status(401).json({ ok: 0, errorMessage: 'Unauthorized' });
     const { password } = req.body;
     const newPassword = bcrypt.hashSync(password, 10);
-    console.log("newPassword", newPassword);
+    console.log('newPassword', newPassword);
     User.update(
       {
         password: newPassword,
@@ -301,6 +301,36 @@ const userController = {
               token: newToken,
             },
           },
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
+  getMyBoughtCourse: (req, res) => {
+    const { _page, _limit, _sort, _order } = req.query;
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    Order_item.findAll({
+      where: { '$Order.UserId$': req.userId },
+      include: [Order, { model: Course, include: [Teacher] }],
+      offset: _page ? (_page - 1) * CoursesPerPage : 0,
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+    })
+      .then((result) => {
+        if (result.length === 0)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available courses',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: result.map((el) => el.Course),
         });
       })
       .catch((error) => {
