@@ -1,9 +1,7 @@
 const db = require('../models');
 const bcrypt = require('bcrypt');
-const { User, Course, Teacher, Order, Order_item } = db;
+const { User, Teacher, Course, Order, Order_item } = db;
 const { setToken, checkAuth, checkToken } = require('../middleware/auth');
-const courseController = require('./course');
-const order_item = require('../models/order_item');
 
 const emailRegExp = /^([\w\.\-]){1,64}\@([\w\.\-]){1,64}$/;
 const passwordRegExp = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,20}$/;
@@ -16,26 +14,40 @@ const isGoodPassword = (password) => {
 
 const userController = {
   register: (req, res) => {
-    const { email, password, confirm, nickname } = req.body;
-    if (!email || !password || !confirm || !nickname)
-      return res
-        .status(400)
-        .json({ ok: 0, errorMessage: 'Please enter all necessary fields' });
-    if (!isEmail(email))
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '使用者註冊（JWT）'
+    #swagger.parameters['obj'] = {
+      in: 'body',
+      description: '註冊資料',
+      required: true,
+      type: 'object',
+      schema: {
+        $email: 'example@mail.com',
+        $password: 'Aa123456',
+        $nickname: 'example',
+      }
+    }
+    */
+    const { email, password, nickname } = req.body;
+    if (!email || !password || !nickname) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: 'Please enter all necessary fields',
+      });
+    }
+    if (!isEmail(email)) {
       return res.status(400).json({
         ok: 0,
         errorMessage: `${email} is not an email`,
       });
-    if (!isGoodPassword(password))
+    }
+    if (!isGoodPassword(password)) {
       return res.status(400).json({
         ok: 0,
         errorMessage: 'Please follow the rule for password',
       });
-    if (password !== confirm)
-      return res.status(400).json({
-        ok: 0,
-        errorMessage: "Password isn't equal to confirm password",
-      });
+    }
     User.findOne({ where: { email } }).then((user) => {
       if (user)
         return res.status(400).json({
@@ -53,15 +65,7 @@ const userController = {
           const token = setToken(newUser.id);
           res.status(201).json({
             ok: 1,
-            data: {
-              user: {
-                id: newUser.id,
-                email: newUser.email,
-                nickname: newUser.nickname,
-                auth_type: newUser.AuthTypeId,
-                token,
-              },
-            },
+            token,
           });
         })
         .catch((error) =>
@@ -73,41 +77,48 @@ const userController = {
     });
   },
   login: (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '使用者登入（JWT）'
+    #swagger.parameters['obj'] = {
+      in: 'body',
+      description: '登入資料',
+      required: true,
+      type: 'object',
+      schema: {
+        $email: 'user@gmail.com',
+        $password: 'Aa123456',
+      }
+    }
+    */
     const { email, password } = req.body;
-    if (!email || !password)
+    if (!email || !password) {
       return res.status(400).json({
         ok: 0,
         errorMessage: 'Please enter all necessary fields',
       });
+    }
     User.findOne({
-      where: {
-        email,
-      },
+      where: { email },
     })
       .then((user) => {
-        if (!user)
-          return res
-            .status(400)
-            .json({ ok: 0, errorMessage: 'Cannot find user' });
+        if (!user) {
+          return res.status(400).json({
+            ok: 0,
+            errorMessage: 'Cannot find user',
+          });
+        }
         bcrypt.compare(password, user.password).then((result) => {
-          if (!result)
+          if (!result) {
             return res.status(400).json({
               ok: 0,
               errorMessage: 'wrong password',
             });
-          req.session.userId = user.id;
+          }
           const token = setToken(user.id);
           return res.status(200).json({
             ok: 1,
-            data: {
-              user: {
-                id: user.id,
-                email: user.email,
-                nickname: user.nickname,
-                auth_type: user.AuthTypeId,
-                token,
-              },
-            },
+            token,
           });
         });
       })
@@ -118,41 +129,58 @@ const userController = {
         })
       );
   },
-  logout: (req, res) => {
-    if (!req.session.userId)
-      return res.status(400).json({
-        ok: 0,
-        errorMessage: "Didn't login",
-      });
-    req.session.destroy();
-    return res.status(200).json({
-      ok: 1,
-      data: 'logout success',
-    });
-  },
   getMe: (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '取得自己的使用者資料'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     const userId = checkToken(req);
     if (!userId)
       return res.status(400).json({
         ok: 0,
         errorMessage: "Didn't login",
       });
-    User.findByPk(userId)
+    User.findByPk(userId, { include: [Teacher] })
       .then((user) => {
         if (!user)
           return res.status(404).json({
             ok: 0,
             errorMessage: 'Cannot find User',
           });
-        return res.status(200).json({
-          ok: 1,
-          data: {
-            user: {
+        // 老師一併回傳 teacherId, 用於之後新增課程及追蹤身分使用
+        if (user.AuthTypeId == 2) {
+          return res.status(200).json({
+            ok: 1,
+            data: {
               id: user.id,
               email: user.email,
               nickname: user.nickname,
-              auth_type: user.AuthTypeId,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+              authTypeId: user.AuthTypeId,
+              Teacher: {
+                id: user.Teacher.id,
+                name: user.Teacher.name,
+                description: user.Teacher.description,
+                avatarUrl: user.Teacher.avatarUrl,
+                createdAt: user.Teacher.createdAt,
+                updatedAt: user.Teacher.updatedAt,
+              },
             },
+          });
+        }
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            id: user.id,
+            email: user.email,
+            nickname: user.nickname,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            authTypeId: user.AuthTypeId,
           },
         });
       })
@@ -164,22 +192,71 @@ const userController = {
       });
   },
   getAllUser: (req, res) => {
-    User.findAll()
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '取得所有用戶資料（admin only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    #swagger.parameters['_page'] = {
+      in: 'query',
+      description: '分頁(預設每頁五筆)',
+      type: 'number',
+    }
+    #swagger.parameters['_limit'] = {
+      in: 'query',
+      description: '搭配分頁參數可調整每頁資料數目',
+      type: 'number',
+    }
+    #swagger.parameters['_sort'] = {
+      in: 'query',
+      description: '排序依據(預設 id)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'id',
+          'createdAt'
+        ],
+        default: 'id'
+      }
+    }
+    #swagger.parameters['_order'] = {
+      in: 'query',
+      description: '排序方式(預設遞增)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'ASC',
+          'DESC'
+        ],
+        default: 'ASC'
+      }
+    }
+    */
+   const { _page, _limit, _sort, _order } = req.query;
+   let CoursesPerPage = Number(_limit) || 5;
+   let sort = _sort || 'id';
+   let order = _order || 'ASC';
+    User.findAll({
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+    })
       .then((users) => {
+        console.log(users);
         return res.status(200).json({
           ok: 1,
-          data: {
-            users: users.map((user) => {
-              return {
-                id: user.id,
-                email: user.email,
-                nickname: user.nickname,
-                auth_type: user.AuthTypeId,
-                created_at: user.createdAt,
-                updated_at: user.updatedAt,
-              };
-            }),
-          },
+          data: users.map((user) => {
+            return {
+              id: user.id,
+              email: user.email,
+              nickname: user.nickname,
+              authTypeId: user.AuthTypeId,
+              createdAt: user.createdAt,
+              updatedAt: user.updatedAt,
+            };
+          }),
         });
       })
       .catch((error) => {
@@ -190,6 +267,13 @@ const userController = {
       });
   },
   getUser: (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '取得指定用戶資料（admin only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     const userId = req.params.id;
     User.findByPk(userId, {
       include: {
@@ -216,15 +300,13 @@ const userController = {
         return res.status(200).json({
           ok: 1,
           data: {
-            user: {
-              id: user.id,
-              email: user.email,
-              nickname: user.nickname,
-              auth_type: user.AuthTypeId,
-              created_at: user.createdAt,
-              updated_at: user.updatedAt,
-              courseList,
-            },
+            id: user.id,
+            email: user.email,
+            nickname: user.nickname,
+            authTypeId: user.AuthTypeId,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            courseList,
           },
         });
       })
@@ -235,72 +317,30 @@ const userController = {
         });
       });
   },
-  updateUserInfo: (req, res) => {
-    const userId = Number(req.params.id);
-    const userAuthType = Number(req.authTypeId);
-    if (userAuthType !== 3) {
-      const token = Number(checkToken(req));
-      if (token !== userId)
-        return res.status(401).json({ ok: 0, errorMessage: 'Unauthorized' });
-    }
-    const { nickname, email, AuthTypeId } = req.body;
-    User.findByPk(userId)
-      .then((user) => {
-        const newNickname = nickname || user.nickname;
-        const newEmail = email || user.email;
-        const newAuthTypeId = AuthTypeId || user.AuthTypeId;
-        User.update(
-          {
-            email: newEmail,
-            nickname: newNickname,
-            AuthTypeId: newAuthTypeId,
-          },
-          { where: { id: userId } }
-        ).then((updatedUser) => {
-          return res.status(200).json({
-            ok: 1,
-            data: {
-              user: {
-                id: userId,
-                email: newEmail,
-                nickname: newNickname,
-                auth_type: newAuthTypeId,
-              },
-            },
-          });
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
-  },
-  updateUserPassword: (req, res) => {
-    const userId = req.params.id;
-    const token = checkToken(req);
-    if (token !== userId)
-      return res.status(401).json({ ok: 0, errorMessage: 'Unauthorized' });
-    const { password } = req.body;
-    const newPassword = bcrypt.hashSync(password, 10);
-    console.log('newPassword', newPassword);
+  updateUserAuth: (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '更新指定用戶權限（admin only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     User.update(
       {
-        password: newPassword,
+        AuthTypeId: req.body.AuthTypeId,
       },
-      { where: { id: userId } }
+      { where: { id: req.params.id } }
     )
-      .then((updatedUser) => {
-        const newToken = setToken(userId);
+      .then((result) => {
+        if (result[0] !== 1) {
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'Cannot find user',
+          });
+        }
         return res.status(200).json({
           ok: 1,
-          data: {
-            user: {
-              id: userId,
-              token: newToken,
-            },
-          },
+          message: 'success',
         });
       })
       .catch((error) => {
@@ -310,27 +350,32 @@ const userController = {
         });
       });
   },
-  getMyBoughtCourse: (req, res) => {
-    const { _page, _limit, _sort, _order } = req.query;
-    let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
-    Order_item.findAll({
-      where: { '$Order.UserId$': req.userId },
-      include: [Order, { model: Course, include: [Teacher] }],
-      offset: _page ? (_page - 1) * CoursesPerPage : 0,
-      limit: _page ? CoursesPerPage : null,
-      order: [[sort, order]],
-    })
+  updateMyInfo: (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '更新自己的個人資料'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
+    console.log('get', req.body.nickname);
+    // 可擴充
+    User.update(
+      {
+        nickname: req.body.nickname,
+      },
+      { where: { id: req.userId } }
+    )
       .then((result) => {
-        if (result.length === 0)
+        if (result[0] !== 1) {
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'No available courses',
+            errorMessage: 'Cannot find user',
           });
+        }
         return res.status(200).json({
           ok: 1,
-          data: result.map((el) => el.Course),
+          message: 'success',
         });
       })
       .catch((error) => {
@@ -339,6 +384,59 @@ const userController = {
           errorMessage: error.toString(),
         });
       });
+  },
+  updateMyPassword: async (req, res) => {
+    /* 
+    #swagger.tags = ['Users']
+    #swagger.summary = '更新自己的密碼'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
+    const { oldPassword, newPassword } = req.body;
+    console.log(oldPassword, newPassword);
+    if (!isGoodPassword(newPassword)) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: 'Please follow the rule for password',
+      });
+    }
+    try {
+      const userData = await User.findOne({
+        where: { id: req.userId },
+      });
+      if (!userData) {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: 'Cannot find user',
+        });
+      }
+      const checkIsCorrect = await bcrypt.compare(
+        oldPassword,
+        userData.password
+      );
+      if (!checkIsCorrect) {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: 'wrong password',
+        });
+      }
+      await User.update(
+        {
+          password: bcrypt.hashSync(newPassword, 10),
+        },
+        { where: { id: req.userId } }
+      );
+      return res.status(200).json({
+        ok: 1,
+        message: 'success',
+      });
+    } catch (error) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: error.toString(),
+      });
+    }
   },
 };
 

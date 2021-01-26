@@ -4,19 +4,15 @@ const userController = require('../controllers/user');
 const { checkAuth } = require('../middleware/auth');
 
 // user
-userRouter.post('/user', userController.register);
+userRouter.post('/register', userController.register);
 userRouter.post('/login', userController.login);
-userRouter.post('/logout', userController.logout);
-userRouter.get('/user', checkAuth('admin'), userController.getAllUser);
-userRouter.get('/user/:id', checkAuth('admin'), userController.getUser);
-userRouter.patch('/user/:id', checkAuth(), userController.updateUserInfo);
-userRouter.patch('/user/password/:id', userController.updateUserPassword);
 userRouter.get('/me', userController.getMe);
-userRouter.get(
-  '/me/bought-courses',
-  checkAuth(),
-  userController.getMyBoughtCourse
-);
-userRouter.get('/me/orders', userController.getMe);
+userRouter.patch('/me', checkAuth(), userController.updateMyInfo);
+userRouter.patch('/password/me', checkAuth(), userController.updateMyPassword);
+
+userRouter.get('/', checkAuth('admin'), userController.getAllUser);
+userRouter.get('/:id', checkAuth('admin'), userController.getUser);
+// id 須放置最後方避免上方兩個參數也被當作 url params 解析
+userRouter.patch('/:id', checkAuth('admin'), userController.updateUserAuth);
 
 module.exports = userRouter;

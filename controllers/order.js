@@ -1,50 +1,63 @@
-const { Op } = require("sequelize");
-const db = require("../models");
-const { sequelize } = require("../models");
-const { Order, Order_item, Cart_item } = db;
+const { Op } = require('sequelize');
+const db = require('../models');
+const { sequelize } = require('../models');
+const { Order, Order_item, Course, Cart_item } = db;
 
 const orderController = {
-  getOrderList: (req, res) => {
+  getMyOrders: (req, res) => {
+    /* 
+    #swagger.tags = ['Orders']
+    #swagger.summary = '取得自己的訂單列表'
+    #swagger.security = [{
+      "Bearer": []
+    }]
+    #swagger.parameters['_page'] = {
+      in: 'query',
+      description: '分頁(預設每頁五筆)',
+      type: 'number',
+    }
+    #swagger.parameters['_limit'] = {
+      in: 'query',
+      description: '搭配分頁參數可調整每頁資料數目',
+      type: 'number',
+    }
+    #swagger.parameters['_sort'] = {
+      in: 'query',
+      description: '排序依據(預設 id)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'id',
+          'sumPrice',
+          'createdAt'
+        ],
+        default: 'id'
+      }
+    }
+    #swagger.parameters['_order'] = {
+      in: 'query',
+      description: '排序方式(預設遞增)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'ASC',
+          'DESC'
+        ],
+        default: 'ASC'
+      }
+    }
+    */
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || "id";
-    let order = _order || "ASC";
-    let where = req.query.UserId ? { UserId } : "";
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
     Order.findAll({
       offset: _page ? (_page - 1) * CoursesPerPage : 0,
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],
-      where,
-    })
-      .then((orderList) => {
-        if (orderList.length === 0)
-          return res.status(404).json({
-            ok: 0,
-            errorMessage: "No available orders",
-          });
-        return res.status(200).json({
-          ok: 1,
-          data: {
-            orderList,
-          },
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
-  },
-  getMyOrderList: (req, res) => {
-    const { _page, _limit, _sort, _order } = req.query;
-    let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || "id";
-    let order = _order || "ASC";
-    Order.findAll({
-      offset: _page ? (_page - 1) * CoursesPerPage : 0,
-      limit: _page ? CoursesPerPage : null,
-      order: [[sort, order]],
+      include: [{ model: Order_item, include: Course }],
       where: {
         UserId: req.userId,
       },
@@ -53,13 +66,11 @@ const orderController = {
         if (orderList.length === 0)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "No available orders",
+            errorMessage: 'No available orders',
           });
         return res.status(200).json({
           ok: 1,
-          data: {
-            orderList,
-          },
+          data: orderList,
         });
       })
       .catch((error) => {
@@ -69,7 +80,14 @@ const orderController = {
         });
       });
   },
-  getOrder: (req, res) => {
+  getOneOrder: (req, res) => {
+    /* 
+    #swagger.tags = ['Orders']
+    #swagger.summary = '取得指定使用者的訂單列表（admin only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     // 管理員才可查看非自己的訂單
     let where =
       req.authTypeId === 3
@@ -85,7 +103,7 @@ const orderController = {
         if (!order)
           return res.status(404).json({
             ok: 0,
-            errorMessage: "No available order",
+            errorMessage: 'No available order',
           });
         return res.status(200).json({
           ok: 1,
@@ -101,36 +119,141 @@ const orderController = {
         });
       });
   },
+  getOrders: (req, res) => {
+    /* 
+    #swagger.tags = ['Orders']
+    #swagger.summary = '取得所有的訂單列表（admin only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    #swagger.parameters['_page'] = {
+      in: 'query',
+      description: '分頁(預設每頁五筆)',
+      type: 'number',
+    }
+    #swagger.parameters['_limit'] = {
+      in: 'query',
+      description: '搭配分頁參數可調整每頁資料數目',
+      type: 'number',
+    }
+    #swagger.parameters['_sort'] = {
+      in: 'query',
+      description: '排序依據(預設 id)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'id',
+          'sumPrice',
+          'createdAt'
+        ],
+        default: 'id'
+      }
+    }
+    #swagger.parameters['_order'] = {
+      in: 'query',
+      description: '排序方式(預設遞增)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'ASC',
+          'DESC'
+        ],
+        default: 'ASC'
+      }
+    }
+    */
+    const { _page, _limit, _sort, _order } = req.query;
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
+    let where = req.query.UserId ? { UserId } : '';
+    Order.findAll({
+      offset: _page ? (_page - 1) * CoursesPerPage : 0,
+      limit: _page ? CoursesPerPage : null,
+      order: [[sort, order]],
+      where,
+    })
+      .then((orderList) => {
+        if (orderList.length === 0)
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'No available orders',
+          });
+        return res.status(200).json({
+          ok: 1,
+          data: {
+            orderList,
+          },
+        });
+      })
+      .catch((error) => {
+        return res.status(400).json({
+          ok: 0,
+          errorMessage: error.toString(),
+        });
+      });
+  },
   receiveOrder: async (req, res) => {
+    /* 
+    #swagger.tags = ['Orders']
+    #swagger.summary = '送出訂單'
+    #swagger.security = [{
+      "Bearer": []
+    }]
+    #swagger.parameters['obj'] = {
+      in: 'body',
+      description: '訂單資料',
+      required: true,
+      type: 'object',
+      schema: {
+        $sumPrice: 1000,
+        orderCourses: [
+          {'CourseId': 1, 'amountPaid': 1000}
+        ],
+        name: '購買人姓名（免費課程可不填）',
+        $paymentType: '付款方式（免費課程可不填）',
+      }
+    }
+    */
     const { name, orderCourses, paymentType, sumPrice } = req.body;
-    console.log(req.body);
-    if (!name || !orderCourses || !paymentType || !sumPrice) {
+    if (sumPrice < 0 || !orderCourses) {
       return res.status(400).json({
         ok: 0,
-        errorMessage: "資料不齊全",
+        errorMessage: '資料不齊全或格式錯誤',
+      });
+    }
+    if (sumPrice !== 0 && (!name || !paymentType)) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: '資料不齊全或格式錯誤',
       });
     }
     // 檢查有無重複購買或非公開課程
-    console.log("orderCourses", orderCourses);
     let newOrderId;
     try {
       // 開始 transaction 全部成功或全部失敗
       // 依照付款資料授權課程給 user
       await sequelize.transaction(async (t) => {
-        const newOrder = await Order.create({
-          // 身分驗證
-          UserId: req.userId,
-          name,
-          paymentType,
-          sumPrice,
-          orderCourses: JSON.stringify(orderCourses),
-          // 付款驗證
-          isPaid: true,
-        });
+        const newOrder = await Order.create(
+          {
+            // 身分驗證
+            UserId: req.userId,
+            sumPrice,
+            orderCourses: JSON.stringify(orderCourses),
+            // 非免費課程才要填
+            name: paymentType || 'free',
+            paymentType: paymentType || 'free',
+            // 付款驗證
+            isPaid: true,
+          },
+          { transaction: t }
+        );
         if (!newOrder) {
           return res.status(400).json({
             ok: 0,
-            errorMessage: "send order failed",
+            errorMessage: 'send order failed',
           });
         }
         newOrderId = newOrder.id;
@@ -166,10 +289,16 @@ const orderController = {
       });
 
       // 所有作業完成
-      console.log("收到訂單，orderId: ", newOrderId);
+      console.log('收到訂單，orderId: ', newOrderId);
+      if (sumPrice === 0) {
+        return res.status(200).json({
+          ok: 1,
+          message: `加入課程成功, 您的訂單編號為: ${newOrderId}`,
+        });
+      }
       return res.status(200).json({
         ok: 1,
-        orderNumber: newOrderId,
+        message: `付款成功, 您的訂單編號為: ${newOrderId}`,
       });
 
       /*

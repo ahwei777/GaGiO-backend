@@ -10,11 +10,15 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       User.hasMany(models.Order);
       User.hasOne(models.Teacher)
+      User.belongsTo(models.Auth_Type)
     }
   }
   User.init(
     {
-      email: DataTypes.STRING,
+      email: {
+        type: DataTypes.STRING,
+        unique: true,
+      },
       password: DataTypes.STRING,
       nickname: DataTypes.STRING,
       AuthTypeId: DataTypes.INTEGER,

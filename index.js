@@ -10,6 +10,11 @@ const teacherRoutes = require("./routes/teacherRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
+
+// swagger
+app.use('/api-doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 // Enable All CORS Requests
 app.use(cors());

@@ -1,11 +1,9 @@
 const express = require('express');
-const { checkAuth, getAuth, checkCourseAuth, checkTeacherAuth } = require('../middleware/auth');
+const { checkAuth, getAuth, checkCourseAuth } = require('../middleware/auth');
 const courseRouter = express.Router();
 const courseController = require('../controllers/course');
-const unitController = require('../controllers/unit');
 
 // /courses
-
 courseRouter.get('/', getAuth(), courseController.getAllCourses);
 courseRouter.get('/:courseId', getAuth(), courseController.getCourse);
 courseRouter.post('/', checkAuth('teacher'), courseController.addCourse);
@@ -13,29 +11,49 @@ courseRouter.post('/', checkAuth('teacher'), courseController.addCourse);
 //courseRouter.delete("/courses/:courseId", checkAuth('teacher'), courseController.deleteCourse);
 courseRouter.patch(
   '/:courseId',
-  checkAuth('teacher'),
+  checkAuth('updateCourse'),
   courseController.updateCourse
 );
 
-// 移到 users/me
-// boughtCourse
-
+// teach-course
 courseRouter.get(
-  '/boughtCourses',
+  '/teach-courses/me',
+  checkAuth('teacher'),
+  courseController.getMyTeachCourses
+);
+// bought-course
+courseRouter.get(
+  '/bought-courses/me',
+  checkAuth(),
+  courseController.getMyBoughtCourses
+);
+courseRouter.get(
+  '/bought-courses',
   checkAuth('admin'),
-  courseController.getBoughtCourse
+  courseController.getBoughtCourses
 );
 
+// 有購買的學生, 該堂課老師, 管理員
+courseRouter.get(
+  "/detail/:courseId",
+  checkAuth('ownCourse'),
+  courseController.getDetailCourse
+);
+courseRouter.get("/:courseId/units/:unitId", checkAuth('ownCourse'), courseController.getUnitByUnitId);
+// 該堂課老師或管理員
+courseRouter.patch("/:courseId/units/:unitId", checkAuth('updateCourse'), courseController.updateUnitByUnitId);
+
 // unit
+/*
 courseRouter.get(
   "/:courseId/units",
   checkAuth(),
   checkCourseAuth(),
   unitController.getAllUnitsByCourseId
 );
-courseRouter.get("/:courseId/units/:unitId", checkAuth(), unitController.getUnitByUnitId);
-//ourseRouter.post("/unit", checkTeacherAuth("course"), unitController.addUnit);
-courseRouter.patch("/:courseId/units", checkTeacherAuth("unit"), unitController.updateUnit);
-courseRouter.delete("/unit/:id", checkTeacherAuth("unit"), unitController.deleteUnit);
+courseRouter.patch("/:courseId/units", checkAuth('teacher'), unitController.updateUnitByCourseId);
+ourseRouter.post("/unit", checkTeacherAuth("course"), unitController.addUnit);
+courseRouter.delete("/unit/:id", checkTeacherAuth("unit"), unitController.deleteUnitByCourseId);
+*/
 
 module.exports = courseRouter;
