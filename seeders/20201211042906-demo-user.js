@@ -10,7 +10,7 @@ module.exports = {
           password:
             "$2b$10$wLehO8BxvecD6pustyiJTuo73i8hYTAtT3ZLglfZdQXUf..VjD.M.", //Aa123456
           nickname: "測試用 user",
-          AuthTypeId: 3,
+          AuthTypeId: 1,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -19,7 +19,7 @@ module.exports = {
           password:
             "$2b$10$MAcFEavjRaCu7oO6XiFwK.oUQnuPufuUe9HZksyHArYZccK4nidE2", //Admin123
           nickname: "測試用 admin",
-          AuthTypeId: 1,
+          AuthTypeId: 3,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -37,6 +37,15 @@ module.exports = {
           password:
             "$2b$10$wLehO8BxvecD6pustyiJTuo73i8hYTAtT3ZLglfZdQXUf..VjD.M.", //Aa123456
           nickname: "teacher_ninja",
+          AuthTypeId: 2,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          email: "teacher_holi@mail.com", // id 5
+          password:
+            "$2b$10$wLehO8BxvecD6pustyiJTuo73i8hYTAtT3ZLglfZdQXUf..VjD.M.", //Aa123456
+          nickname: "teacher_holi",
           AuthTypeId: 2,
           createdAt: new Date(),
           updatedAt: new Date(),
