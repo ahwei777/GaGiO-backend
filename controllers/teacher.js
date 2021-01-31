@@ -1,8 +1,50 @@
 const db = require('../models');
-const { Course, Teacher } = db;
+const { Course, Teacher, User } = db;
+const { sequelize } = require('../models');
 
 const teacherController = {
   getTeacherList: (req, res) => {
+    /* 
+    #swagger.tags = ['Teachers']
+    #swagger.summary = '取得所有老師資料'
+        #swagger.parameters['_page'] = {
+      in: 'query',
+      description: '分頁(預設每頁五筆)',
+      type: 'number',
+    }
+    #swagger.parameters['_limit'] = {
+      in: 'query',
+      description: '搭配分頁參數可調整每頁資料數目',
+      type: 'number',
+    }
+    #swagger.parameters['_sort'] = {
+      in: 'query',
+      description: '排序依據(預設 id)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'id',
+          'createdAt'
+        ],
+        default: 'id'
+      }
+    }
+    #swagger.parameters['_order'] = {
+      in: 'query',
+      description: '排序方式(預設遞增)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'ASC',
+          'DESC'
+        ],
+        default: 'ASC'
+      }
+    }
+
+    */
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
@@ -43,6 +85,13 @@ const teacherController = {
       });
   },
   getTeacher: (req, res) => {
+    /* 
+    #swagger.tags = ['Teachers']
+    #swagger.summary = '取得指定老師資料'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     let where = {
       deletedAt: null,
       isPublic: 1,
@@ -83,101 +132,100 @@ const teacherController = {
         });
       });
   },
-
-  addCourse: (req, res) => {
-    const { title, description, price } = req.body;
-    if (!title || !description || !price) {
+  addTeacher: async (req, res) => {
+    /* 
+    #swagger.tags = ['Teachers']
+    #swagger.summary = '申請成為老師'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
+    const { name, description, avatarUrl } = req.body;
+    if (!name || !description || !avatarUrl) {
       return res.status(400).json({
         ok: 0,
         errorMessage: '資料不齊全',
       });
     }
-    Course.create({
-      // 登入後改從 session 取 UserId
-      // const userId = req.session.userId;
-      TeacherId: 1,
-      title,
-      description,
-      price,
-      imgUrl: 'https://i.imgur.com/q4rE8Sd.jpg',
-      isPublic: false,
-    })
-      .then((result) => {
-        console.log(result);
-        // success
-        return res.status(200).json({
-          ok: 1,
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
+    try {
+      const findTeacher = await Teacher.findOne({
+        where: { UserId: req.userId },
       });
-  },
-  deleteCourse: (req, res) => {
-    Course.update(
-      { deletedAt: new Date() },
-      {
-        where: {
-          // 為原開課者才可刪除
-          // TeacherId: 1,
-          deletedAt: null,
-          id: req.params.id,
-        },
+      console.log('findTeacher', findTeacher);
+      if (findTeacher) {
+        return res.status(403).json({
+          ok: 0,
+          errorMessage: '已申請成功，請勿重複申請',
+        });
       }
-    )
-      .then((result) => {
-        console.log(result);
-        // success
-        return res.status(200).json({
-          ok: 1,
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
+      // transaction 全部成功或全部失敗
+      await sequelize.transaction(async (t) => {
+        const result = await Teacher.create(
+          {
+            UserId: req.userId,
+            name,
+            description,
+            avatarUrl,
+          },
+          { transaction: t }
+        );
+        const update = await User.update(
+          {
+            AuthTypeId: 2,
+          },
+          { where: { id: req.userId } },
+          { transaction: t }
+        );
+        if (update[0] === 1) {
+          return res.status(200).json({
+            ok: 1,
+            message: 'success',
+          });
+        }
       });
+    } catch (error) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: error.toString(),
+      });
+    }
   },
-  updateCourse: (req, res) => {
-    const { title, description, price, isPublic } = req.body;
-    if (!title || !description || !price || !isPublic) {
+  updateTeacherInfo: async (req, res) => {
+    /* 
+    #swagger.tags = ['Teachers']
+    #swagger.summary = '更改自己設定的老師資料（teacher only）'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
+    const { name, description, avatarUrl } = req.body;
+    if (!name || !description || !avatarUrl) {
       return res.status(400).json({
         ok: 0,
         errorMessage: '資料不齊全',
       });
     }
-    Course.update(
-      {
-        title,
-        description,
-        price,
-        isPublic,
-      },
-      {
-        where: {
-          // 為原開課者才可編輯
-          // TeacherId: 1,
-          id: req.params.id,
+    try {
+      const update = await Teacher.update(
+        {
+          name,
+          description,
+          avatarUrl,
         },
-      }
-    )
-      .then((result) => {
-        console.log(result);
-        // success
+        { where: { id: req.teacherId } }
+      );
+      if (update[0] === 1) {
         return res.status(200).json({
           ok: 1,
+          message: 'success',
         });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
+      }
+    } catch (error) {
+      return res.status(400).json({
+        ok: 0,
+        errorMessage: error.toString(),
       });
+    }
   },
 };
 

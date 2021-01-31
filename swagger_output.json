@@ -1,0 +1,1550 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "這是利用 `swagger-autogen` 搭配 `express` 建立的 RESTFUL API 文件，因採用 JWT 方式進行身分驗證，如需進行權限操作請於註冊後在 Authorize 內填入取得之 token",
+    "version": "1.0",
+    "title": "GaGiO Backend API Server",
+    "contact": {
+      "email": "puho999@hotmail.com.tw"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://choosealicense.com/licenses/mit/"
+    }
+  },
+  "host": "",
+  "basePath": "",
+  "tags": [
+    {
+      "name": "Users",
+      "description": "使用者相關"
+    },
+    {
+      "name": "Courses",
+      "description": "課程相關"
+    },
+    {
+      "name": "Teachers",
+      "description": "老師相關"
+    },
+    {
+      "name": "Carts",
+      "description": "購物車相關"
+    },
+    {
+      "name": "Orders",
+      "description": "訂單相關"
+    }
+  ],
+  "schemes": [],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "description": "Enter JWT Bearer Token **_only_**",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "consumes": [],
+  "produces": [],
+  "paths": {
+    "/v1/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "使用者註冊（JWT）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "註冊資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "example@mail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "Aa123456"
+                },
+                "nickname": {
+                  "type": "string",
+                  "example": "example"
+                }
+              },
+              "required": [
+                "email",
+                "password",
+                "nickname"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "使用者登入（JWT）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "登入資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "example": "user@gmail.com"
+                },
+                "password": {
+                  "type": "string",
+                  "example": "Aa123456"
+                }
+              },
+              "required": [
+                "email",
+                "password"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/v1/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "取得自己的使用者資料",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "更新自己的個人資料",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/users/password/me": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "更新自己的密碼",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/users/": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "取得所有用戶資料（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/users/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "取得指定用戶資料（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "更新指定用戶權限（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得所有課程資料",
+        "description": "非管理員只能取得已公開課程",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "price",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          },
+          {
+            "name": "_teacher_id",
+            "in": "query",
+            "description": "指定老師 ID",
+            "type": "number"
+          },
+          {
+            "name": "_keyword",
+            "in": "query",
+            "description": "指定課程標題關鍵字",
+            "type": "string"
+          },
+          {
+            "name": "_public",
+            "in": "query",
+            "description": "具管理員身分時帶入 all 可取得非公開課程",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "新增課程（teacher only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "課程資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "課程標題"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "課程介紹"
+                },
+                "price": {
+                  "type": "string",
+                  "example": "課程價格"
+                },
+                "imgUrl": {
+                  "type": "string",
+                  "example": "課程縮圖"
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "price",
+                "imgUrl"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/{courseId}": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得所有課程資料",
+        "description": "如該課為非公開，則只有管理員或原開課者可取得",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "更新指定課程資料（teacher only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "課程資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "課程標題"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "課程介紹"
+                },
+                "price": {
+                  "type": "string",
+                  "example": "課程價格"
+                },
+                "imgUrl": {
+                  "type": "string",
+                  "example": "課程縮圖"
+                },
+                "isPublic": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "unit_list": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "example": "Writing a React component"
+                      },
+                      "description": {
+                        "type": "string",
+                        "example": ""
+                      },
+                      "videoUrl": {
+                        "type": "string",
+                        "example": "https://www.youtube.com/watch?v=0lrHhK5wYgo"
+                      }
+                    }
+                  }
+                }
+              },
+              "required": [
+                "title",
+                "description",
+                "price",
+                "imgUrl",
+                "isPublic"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/teach-courses/me": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得自己開設的課程列表（teacher only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "price",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/bought-courses/me": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得自已購買的課程列表",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "price",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/bought-courses": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得指定使用者購買的課程列表（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "price",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/detail/{courseId}": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得指定課程的詳細教材內容",
+        "description": "",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/courses/{courseId}/units/{unitId}": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "取得指定課程下的指定單元",
+        "description": "",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Courses"
+        ],
+        "summary": "更新指定課程下的指定單元資料",
+        "description": "",
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "單元資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "$unit": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "example": "單元標題"
+                    },
+                    "description": {
+                      "type": "string",
+                      "example": "單元內容"
+                    },
+                    "videoUrl": {
+                      "type": "string",
+                      "example": "https://www.youtube.com/watch?v=0lrHhK5wYgo"
+                    }
+                  },
+                  "required": [
+                    "title"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teachers/": {
+      "get": {
+        "tags": [
+          "Teachers"
+        ],
+        "summary": "取得所有老師資料",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Teachers"
+        ],
+        "summary": "申請成為老師",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Teachers"
+        ],
+        "summary": "更改自己設定的老師資料（teacher only）",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/teachers/{id}": {
+      "get": {
+        "tags": [
+          "Teachers"
+        ],
+        "summary": "取得指定老師資料",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/carts/": {
+      "get": {
+        "tags": [
+          "Carts"
+        ],
+        "summary": "取得自己購物車內的課程列表",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/carts/cart-item/{id}": {
+      "post": {
+        "tags": [
+          "Carts"
+        ],
+        "summary": "將指定課程加入自己的購物車",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Carts"
+        ],
+        "summary": "將指定課程從自己的購物車移除",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/orders/me": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "取得自己的訂單列表",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "sumPrice",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/orders/": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "取得所有的訂單列表（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "_page",
+            "in": "query",
+            "description": "分頁(預設每頁五筆)",
+            "type": "number"
+          },
+          {
+            "name": "_limit",
+            "in": "query",
+            "description": "搭配分頁參數可調整每頁資料數目",
+            "type": "number"
+          },
+          {
+            "name": "_sort",
+            "in": "query",
+            "description": "排序依據(預設 id)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "id",
+                "sumPrice",
+                "createdAt"
+              ],
+              "default": "id"
+            }
+          },
+          {
+            "name": "_order",
+            "in": "query",
+            "description": "排序方式(預設遞增)",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          },
+          {
+            "name": "UserId",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "送出訂單",
+        "description": "",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "訂單資料",
+            "required": true,
+            "type": "object",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sumPrice": {
+                  "type": "number",
+                  "example": 1000
+                },
+                "orderCourses": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "CourseId": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "amountPaid": {
+                        "type": "number",
+                        "example": 1000
+                      }
+                    }
+                  }
+                },
+                "name": {
+                  "type": "string",
+                  "example": "購買人姓名（免費課程可不填）"
+                },
+                "paymentType": {
+                  "type": "string",
+                  "example": "付款方式（免費課程可不填）"
+                }
+              },
+              "required": [
+                "sumPrice",
+                "paymentType"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/orders/{id}": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "取得指定使用者的訂單列表（admin only）",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {}
+}

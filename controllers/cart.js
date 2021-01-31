@@ -3,6 +3,49 @@ const { Cart_item, Course } = db;
 
 const courseController = {
   getCartList: (req, res) => {
+    /* 
+    #swagger.tags = ['Carts']
+    #swagger.summary = '取得自己購物車內的課程列表'
+    #swagger.security = [{
+      "Bearer": []
+    }]
+    #swagger.parameters['_page'] = {
+      in: 'query',
+      description: '分頁(預設每頁五筆)',
+      type: 'number',
+    }
+    #swagger.parameters['_limit'] = {
+      in: 'query',
+      description: '搭配分頁參數可調整每頁資料數目',
+      type: 'number',
+    }
+    #swagger.parameters['_sort'] = {
+      in: 'query',
+      description: '排序依據(預設 id)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'id',
+          'createdAt'
+        ],
+        default: 'id'
+      }
+    }
+    #swagger.parameters['_order'] = {
+      in: 'query',
+      description: '排序方式(預設遞增)',
+      type: 'array',
+      items: {
+        type: 'string',
+        enum: [
+          'ASC',
+          'DESC'
+        ],
+        default: 'ASC'
+      }
+    }
+    */
     const { _page, _limit, _sort, _order } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
@@ -41,6 +84,13 @@ const courseController = {
       });
   },
   addCartItem: async (req, res) => {
+    /* 
+    #swagger.tags = ['Carts']
+    #swagger.summary = '將指定課程加入自己的購物車'
+    #swagger.security = [{
+      "Bearer": []
+    }]
+    */
     // 檢查購物車內是否已有重複課程
     const searchItem = await Cart_item.findOne({
       where: {
@@ -86,6 +136,13 @@ const courseController = {
       });
   },
   deleteCartItem: (req, res) => {
+    /* 
+    #swagger.tags = ['Carts']
+    #swagger.summary = '將指定課程從自己的購物車移除'
+    #swagger.security = [{
+      "Bearer": []
+    }] 
+    */
     Cart_item.findOne(
       {
         where: {
