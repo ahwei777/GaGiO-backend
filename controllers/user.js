@@ -143,13 +143,24 @@ const userController = {
         ok: 0,
         errorMessage: "Didn't login",
       });
-    User.findByPk(userId, { include: [Teacher] })
+
+    User.findByPk(userId, {
+      include: [Teacher, { model: Order, include: [Order_item] }],
+    })
       .then((user) => {
+        console.log('me', user);
         if (!user)
           return res.status(404).json({
             ok: 0,
             errorMessage: 'Cannot find User',
           });
+        // 整理已購買課程清單
+        let boughtCourses = [];
+        user.Orders.map((order) =>
+          order.Order_items.map((order_item) =>
+            boughtCourses.push(order_item.CourseId)
+          )
+        );
         // 老師一併回傳 teacherId, 用於之後新增課程及追蹤身分使用
         if (user.AuthTypeId == 2) {
           return res.status(200).json({
@@ -169,6 +180,7 @@ const userController = {
                 createdAt: user.Teacher.createdAt,
                 updatedAt: user.Teacher.updatedAt,
               },
+              boughtCourses,
             },
           });
         }
@@ -181,6 +193,7 @@ const userController = {
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
             authTypeId: user.AuthTypeId,
+            boughtCourses,
           },
         });
       })
@@ -235,10 +248,10 @@ const userController = {
       }
     }
     */
-   const { _page, _limit, _sort, _order } = req.query;
-   let CoursesPerPage = Number(_limit) || 5;
-   let sort = _sort || 'id';
-   let order = _order || 'ASC';
+    const { _page, _limit, _sort, _order } = req.query;
+    let CoursesPerPage = Number(_limit) || 5;
+    let sort = _sort || 'id';
+    let order = _order || 'ASC';
     User.findAll({
       limit: _page ? CoursesPerPage : null,
       order: [[sort, order]],

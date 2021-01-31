@@ -59,9 +59,13 @@ const courseController = {
       description: '指定課程標題關鍵字',
       type: 'string',
     }
+    #swagger.parameters['_public'] = {
+      in: 'query',
+      description: '具管理員身分時帶入 all 可取得非公開課程',
+      type: 'string',
+    }
     */
-    const { _page, _limit, _sort, _order, _teacher_id, _keyword } = req.query;
-    console.log(_keyword)
+    const { _page, _limit, _sort, _order, _teacher_id, _keyword, _public } = req.query;
     let CoursesPerPage = Number(_limit) || 5;
     let sort = _sort || 'id';
     let order = _order || 'ASC';
@@ -71,8 +75,8 @@ const courseController = {
         [Op.substring]: _keyword ? `${_keyword}` : '',
       },
     };
-    // 管理員才可取得非公開課程
-    if (req.authTypeId !== 3) {
+    // 管理員且有帶參數才可取得非公開課程
+    if (req.authTypeId !== 3 || _public !== 'all') {
       where.isPublic = 1;
     }
     if (_teacher_id) {
@@ -107,7 +111,7 @@ const courseController = {
     /*
     #swagger.tags = ['Courses']
     #swagger.summary = '取得所有課程資料'
-    #swagger.description = '非管理員只能取得已公開課程'
+    #swagger.description = '如該課為非公開，則只有管理員或原開課者可取得'
     #swagger.security = [{
       "Bearer": []
     }] 
@@ -116,29 +120,24 @@ const courseController = {
       deletedAt: null,
       id: req.params.courseId,
     };
-    // 管理員才可取得非公開課程
-    if (req.authTypeId !== 3) {
-      where.isPublic = 1;
-    }
     Course.findOne({
       where,
-      include: [Unit, Teacher, { model: Order_item, include: Order }],
+      include: [Unit, Teacher],
     })
       .then((result) => {
         console.log('result', result);
         if (!result)
           return res.status(404).json({
             ok: 0,
-            errorMessage: 'Cannot find course or the course is non-public',
+            errorMessage: 'Cannot find course',
           });
-        // 從已購買此堂課的 user 中尋找是否有當前使用者
-        let isCourseBought = false;
-        for (const record of result.Order_items) {
-          console.log(record);
-          if (req.userId === Number(record.Order.UserId)) {
-            isCourseBought = true;
-            break;
-          }
+        // 非公開課程只有管理員或此堂課老師才能拿到
+        if (!result.isPublic &&
+          req.authTypeId !== 3 && (req.authTypeId === 2 && req.teacherId !== result.Teacher.id)) {
+          return res.status(404).json({
+            ok: 0,
+            errorMessage: 'This course is non-public',
+          });
         }
         // 整理 unitList
         const unit_list = JSON.parse(result.Unit.unit_list);
@@ -155,7 +154,6 @@ const courseController = {
             updatedAt: result.updatedAt,
             Teacher: { ...result.Teacher.dataValues },
             unit_title: unit_list.map((el) => el.title),
-            isCourseBought,
           },
         });
       })

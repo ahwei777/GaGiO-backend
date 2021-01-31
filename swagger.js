@@ -7,7 +7,7 @@ const endpointsFiles = ['./index.js']; // 要指向的 API，通常使用 Expres
 const doc = {
     info: {
         "description":
-            "這是利用 `swagger-autogen` 搭配 `express` 建立的 RESTFUL API 文件，因採用 JWT 方式進行身分驗證，如需測試請於註冊後在 Authorize 內填入取得之 token 以進行需權限的操作",
+            "這是利用 `swagger-autogen` 搭配 `express` 建立的 RESTFUL API 文件，因採用 JWT 方式進行身分驗證，如需進行權限操作請於註冊後在 Authorize 內填入取得之 token",
         "version":"1.0",
         "title":"GaGiO Backend API Server",
         "contact":{

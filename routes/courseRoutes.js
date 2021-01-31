@@ -35,13 +35,21 @@ courseRouter.get(
 
 // 有購買的學生, 該堂課老師, 管理員
 courseRouter.get(
-  "/detail/:courseId",
+  '/detail/:courseId',
   checkAuth('ownCourse'),
   courseController.getDetailCourse
 );
-courseRouter.get("/:courseId/units/:unitId", checkAuth('ownCourse'), courseController.getUnitByUnitId);
+courseRouter.get(
+  '/:courseId/units/:unitId',
+  checkAuth('ownCourse'),
+  courseController.getUnitByUnitId
+);
 // 該堂課老師或管理員
-courseRouter.patch("/:courseId/units/:unitId", checkAuth('updateCourse'), courseController.updateUnitByUnitId);
+courseRouter.patch(
+  '/:courseId/units/:unitId',
+  checkAuth('updateCourse'),
+  courseController.updateUnitByUnitId
+);
 
 // unit
 /*

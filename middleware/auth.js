@@ -1,10 +1,10 @@
 const db = require('../models');
 const jwt = require('jsonwebtoken');
-const jwtSecretKey = process.env.JWT_KEY || 'test_key';
+const { SECRET } = process.env;
 const { User, Course, Teacher, Unit, Order, Order_item } = db;
 
 const setToken = (userId) => {
-  const token = jwt.sign({ userId: userId.toString() }, jwtSecretKey, {
+  const token = jwt.sign({ userId: userId.toString() }, SECRET, {
     expiresIn: '1 day',
   });
   return token;
@@ -13,7 +13,7 @@ const setToken = (userId) => {
 const checkToken = (req) => {
   if (!req.header('Authorization')) return;
   const token = req.header('Authorization').replace('Bearer ', '');
-  return jwt.verify(token, jwtSecretKey, (err, decoded) => {
+  return jwt.verify(token, SECRET, (err, decoded) => {
     if (err) return;
     return decoded.userId;
   });
@@ -23,7 +23,14 @@ const getAuth = () => {
   return (req, res, next) => {
     const userId = checkToken(req) || '';
     if (!userId) return next();
-    User.findByPk(userId).then((user) => {
+    User.findOne({
+      where: { id: userId },
+      include: [Teacher]
+    }).then((user) => {
+      // 非 teacher 時 user.Teacher = null
+      if (user.Teacher) {
+        req.teacherId = user.Teacher.id;
+      }
       // req 內設置 userId, AuthTypeId 便於後續取得使用者身分進行操作
       req.userId = user.id;
       req.authTypeId = user.AuthTypeId;
@@ -58,8 +65,8 @@ const checkAuth = (identity) => {
         const teacher = await User.findByPk(userId, {
           include: [{ model: Teacher, attributes: ['id'] }],
         });
-        // Teacher or Admin
-        if (teacher.AuthTypeId === 2 || teacher.AuthTypeId === 3) {
+        // Teacher
+        if (teacher.AuthTypeId === 2) {
           // req 內設置 id 便於後續取得使用者身分進行操作
           req.teacherId = teacher.Teacher.id;
           return next();
@@ -107,7 +114,6 @@ const checkAuth = (identity) => {
             TeacherId: user.Teacher.id,
           },
         });
-        console.log('cc course', course)
         // 沒購買也不是自己開的課程 > 無權限
         if (!course) {
           return res.status(403).json({
