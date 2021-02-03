@@ -243,8 +243,8 @@ const orderController = {
             sumPrice,
             orderCourses: JSON.stringify(orderCourses),
             // 非免費課程才要填
-            name: paymentType || 'free',
-            paymentType: paymentType || 'free',
+            name: name || '免費課程',
+            paymentType: paymentType || '免費課程',
             // 付款驗證
             isPaid: true,
           },
