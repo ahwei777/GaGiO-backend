@@ -50,15 +50,15 @@
 
 ```
 ├── config/                    # 資料庫連線設定
-├── middleware/                # 自定義 middleware
-├── routes/                    # 子路由設定            
 ├── controllers/               # 處理資料互動邏輯
-├── models/                    # 定義資料庫模型與關聯
+├── middleware/                # 自定義 middleware
 ├── migrations/                # 資料庫變動紀錄
+├── models/                    # 定義資料庫模型與關聯
+├── routes/                    # 子路由設定
 ├── seeders/                   # demo 資料
 ├── index.js                   # 程式主要入口點
-├── package-lock.json
 ├── package.json               # module 及 script 設定
+├── package-lock.json
 └── README.md
 ```
 
