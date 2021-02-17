@@ -27,11 +27,6 @@ courseRouter.get(
   checkAuth(),
   courseController.getMyBoughtCourses
 );
-courseRouter.get(
-  '/bought-courses',
-  checkAuth('admin'),
-  courseController.getBoughtCourses
-);
 
 // 有購買的學生, 該堂課老師, 管理員
 courseRouter.get(

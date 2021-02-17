@@ -110,7 +110,7 @@ const courseController = {
   getCourse: (req, res) => {
     /*
     #swagger.tags = ['Courses']
-    #swagger.summary = '取得所有課程資料'
+    #swagger.summary = '取得指定課程資料'
     #swagger.description = '如該課為非公開，則只有管理員或原開課者可取得'
     #swagger.security = [{
       "Bearer": []
@@ -485,86 +485,6 @@ const courseController = {
         return res.status(200).json({
           ok: 1,
           data: courseList,
-        });
-      })
-      .catch((error) => {
-        return res.status(400).json({
-          ok: 0,
-          errorMessage: error.toString(),
-        });
-      });
-  },
-  getBoughtCourses: (req, res) => {
-    /* 
-    #swagger.tags = ['Courses']
-    #swagger.summary = '取得指定使用者購買的課程列表（admin only）'
-    #swagger.security = [{
-      "Bearer": []
-    }]
-    #swagger.parameters['_page'] = {
-      in: 'query',
-      description: '分頁(預設每頁五筆)',
-      type: 'number',
-    }
-    #swagger.parameters['_limit'] = {
-      in: 'query',
-      description: '搭配分頁參數可調整每頁資料數目',
-      type: 'number',
-    }
-    #swagger.parameters['_sort'] = {
-      in: 'query',
-      description: '排序依據(預設 id)',
-      type: 'array',
-      items: {
-        type: 'string',
-        enum: [
-          'id',
-          'price',
-          'createdAt'
-        ],
-        default: 'id'
-      }
-    }
-    #swagger.parameters['_order'] = {
-      in: 'query',
-      description: '排序方式(預設遞增)',
-      type: 'array',
-      items: {
-        type: 'string',
-        enum: [
-          'ASC',
-          'DESC'
-        ],
-        default: 'ASC'
-      }
-    }
-    */
-    const { _page, _limit, _sort, _order, UserId } = req.query;
-    if (!UserId) {
-      return res.status(404).json({
-        ok: 0,
-        errorMessage: 'UserId is necessary',
-      });
-    }
-    let CoursesPerPage = Number(_limit) || 5;
-    let sort = _sort || 'id';
-    let order = _order || 'ASC';
-    Order_item.findAll({
-      where: { '$Order.UserId$': UserId },
-      include: [Order, { model: Course }],
-      offset: _page ? (_page - 1) * CoursesPerPage : 0,
-      limit: _page ? CoursesPerPage : null,
-      order: [[sort, order]],
-    })
-      .then((result) => {
-        if (result.length === 0)
-          return res.status(404).json({
-            ok: 0,
-            errorMessage: 'No available courses',
-          });
-        return res.status(200).json({
-          ok: 1,
-          data: result.map((el) => el.Course),
         });
       })
       .catch((error) => {

@@ -514,7 +514,7 @@
         "tags": [
           "Courses"
         ],
-        "summary": "取得所有課程資料",
+        "summary": "取得指定課程資料",
         "description": "如該課為非公開，則只有管理員或原開課者可取得",
         "parameters": [
           {
@@ -716,77 +716,6 @@
           "Courses"
         ],
         "summary": "取得自已購買的課程列表",
-        "description": "",
-        "parameters": [
-          {
-            "name": "_page",
-            "in": "query",
-            "description": "分頁(預設每頁五筆)",
-            "type": "number"
-          },
-          {
-            "name": "_limit",
-            "in": "query",
-            "description": "搭配分頁參數可調整每頁資料數目",
-            "type": "number"
-          },
-          {
-            "name": "_sort",
-            "in": "query",
-            "description": "排序依據(預設 id)",
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "id",
-                "price",
-                "createdAt"
-              ],
-              "default": "id"
-            }
-          },
-          {
-            "name": "_order",
-            "in": "query",
-            "description": "排序方式(預設遞增)",
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "default": "ASC"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        },
-        "security": [
-          {
-            "Bearer": []
-          }
-        ]
-      }
-    },
-    "/v1/courses/bought-courses": {
-      "get": {
-        "tags": [
-          "Courses"
-        ],
-        "summary": "取得指定使用者購買的課程列表（admin only）",
         "description": "",
         "parameters": [
           {
